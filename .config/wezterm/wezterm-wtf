@@ -1,0 +1,113 @@
+local wezterm = require("wezterm")
+
+local config = wezterm.config_builder()
+
+config.keys = {
+	{ key = "L", mods = "ALT", action = wezterm.action.ShowDebugOverlay },
+}
+
+-- Global options
+
+config.term = "wezterm"
+-- config.max_fps = 120
+-- config.front_end = "WebGpu"
+-- config.enable_kitty_graphics = true
+-- config.detect_password_input = true
+-- config.prefer_egl = true
+-- config.audible_bell = "Disabled"
+-- config.scrollback_lines = 10000
+-- config.native_macos_fullscreen_mode = false
+-- config.adjust_window_size_when_changing_font_size = false
+config.automatically_reload_config = true
+-- config.initial_cols = 110
+-- config.initial_rows = 40
+
+-- Font control
+
+config.font = wezterm.font("MonoLisa", { weight = "Black" })
+config.font_size = 16
+
+-- Tab bar control
+
+-- config.enable_tab_bar = false
+-- config.use_fancy_tab_bar = true
+-- config.show_tabs_in_tab_bar = false
+-- config.show_new_tab_button_in_tab_bar = false
+-- config.show_tab_index_in_tab_bar = false
+-- config.hide_tab_bar_if_only_one_tab = false
+-- config.tab_bar_at_bottom = true
+-- config.tab_and_split_indices_are_zero_based = false
+
+-- Scroll bar control
+
+-- config.enable_scroll_bar = false
+-- config.min_scroll_bar_height = "1px"
+
+-- Mouse control
+
+-- config.hide_mouse_cursor_when_typing = false
+-- config.pane_focus_follows_mouse = true
+-- config.swallow_mouse_click_on_pane_focus = true
+
+-- Window control
+
+-- config.macos_window_background_blur = 10
+-- config.window_close_confirmation = "NeverPrompt"
+-- config.window_decorations = "RESIZE"
+
+-- Cursor control
+
+config.default_cursor_style = "BlinkingBar"
+config.cursor_blink_ease_in = "Constant"
+config.cursor_blink_ease_out = "Constant"
+
+-- Startup window config
+-- Should create two workspaces, with a window in each workspace
+-- running:
+-- - btop
+-- - yazi
+
+-- Control window padding to eliminate wasted vertical budget from defaults.
+-- https://wezfurlong.org/wezterm/config/lua/config/window_padding.html
+config.window_padding = {
+	left = 0,
+	right = 0,
+	top = 0,
+	bottom = 0,
+}
+
+local mux = wezterm.mux
+
+local repos_dir = wezterm.home_dir .. "/repos/"
+
+wezterm.on("gui-startup", function(cmd)
+	local args = {}
+	if cmd then
+		args = cmd.args
+	end
+
+	-- Create a development workspace
+
+	local tab, pane, window = mux.spawn_window({
+		workspace = "dev",
+		args = { "yazi" },
+		cwd = repos_dir,
+		set_environment_variables = { PATH = "/bin:/usr/bin:/opt/homebrew/bin" },
+		domain = { DomainName = "dev" },
+	})
+
+	-- Create a performance analysis workspace
+	--
+	local tab, pane, window = mux.spawn_window({
+		workspace = "perf",
+		args = { "btop" },
+		cwd = repos_dir,
+		set_environment_variables = { PATH = "/bin:/usr/bin:/opt/homebrew/bin" },
+		domain = { DomainName = "dev" },
+	})
+
+	-- We want to startup in the coding workspace
+	mux.set_active_workspace("perf")
+end)
+
+return config

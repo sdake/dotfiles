@@ -1,2 +1,4 @@
 # dotfiles
-sdake dotfiles: Steve Dake's TUI interface.. Sourced from many places. uch of this tuned from man pages.
+
+My personal TUI dotfiles, including raycast. Sourced from many places. Most of this was hand-generated though, from
+man pages.

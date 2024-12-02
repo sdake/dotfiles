@@ -1,0 +1,26 @@
+
+[ env ]
+TERM = "xterm-256color"
+
+[window]
+padding.x = 10
+padding.y = 10
+dynamic_padding = true
+decorations = "Buttonless"
+
+[font]
+normal.family = "MonoLisa Variable"
+normal.style = "Bold"
+size = 20
+builtin_box_drawing = true
+
+[general]
+import = [
+    "~/.config/alacritty/themes/themes/rose-pine-moon.toml"
+]
+live_config_reload = true
+
+#for video
+[terminal]
+shell = { program = "/opt/homebrew/bin/fish" }
+osc52 = "CopyPaste"
