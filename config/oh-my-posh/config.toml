@@ -1,0 +1,103 @@
+schema = "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json"
+version = 3
+console_title_template = "{{if .Root}} \u26a1 {{end}}{{.Folder | replace \"~\" \"🏚\" }} @ {{.HostName}}"
+
+[palette]
+git-fg = "#FFFFFF"
+git-bg = "#D67E00"
+path-fg = "#FFFFFF"
+path-bg = "#005BD6"
+error-bg = "#910000"
+error-fg = "#FFFFFF"
+time-fg = "#FFFFFF"
+time-bg = "#2E9599"
+prompt-fg = "#000000"
+
+[transient_prompt]
+background = "transparent"
+foreground = "P:prompt-fg"
+template = "{{ .Shell }}> "
+
+[[blocks]]
+type = "prompt"
+alignment = "left"
+
+# Path in format of HouseIcon / ...children.. / curent path.
+[[blocks.segments]]
+type = "root"
+background = "p:ath-bg"
+foreground = "p:path-fg"
+style = "plain"
+template = "\u26a1 "
+
+[[blocks.segments]]
+type = "path"
+background = "p:path-bg"
+foreground = "p:path-fg"
+style = "diamond"
+template = " {{ .Path }} "
+trailing_diamond = "\ue0b0"
+
+[blocks.segments.properties]
+#folder_icon = "..."
+folder_separator_icon = "<transparent> \ue0bd </>"
+home_icon = "\ueb06"
+style = "unique"
+
+[blocks.segments.mapped_locations]
+"~/repos/" = ""
+
+# Git configuration in form of repo-name/branch-name.
+[[blocks.segments]]
+type = "git"
+background = "p:git-bg"
+foreground = "p:git-fg"
+style = "powerline"
+template = " {{ .UpstreamIcon }}{{ .RepoName }} <p:git-fg>\ue0a0</>{{ .Commit.Refs.Heads }} "
+powerline_symbol = "\ue0b0"
+
+[blocks.segments.properties]
+fetch_upstream_icon = true
+fetch_status = true
+
+[[blocks.segments]]
+type = "executiontime"
+foreground = "p:time-fg"
+background = "p:time-bg"
+leading_diamond = "<transparent,p:time-bg>\ue0b0</>"
+style = "diamond"
+template = " <#fefefe></> {{ .FormattedMs }} "
+trailing_diamond = "\ue0b0"
+
+[blocks.segments.properties]
+style = "dallas"
+threshold = 0
+
+# Displays error code in English
+[[blocks.segments]]
+type = "status"
+background = "p:error-bg"
+foreground = "p:error-fg"
+style = "powerline"
+template = " {{ reason .Code }} "
+powerline_symbol = "\ue0b0"
+
+# Second line.
+[[blocks]]
+type = "prompt"
+alignment = "left"
+newline = true
+
+[[blocks.segments]]
+type = "status"
+foreground = "P:error-fg"
+background = "#000000"
+style = "plain"
+template = "\u276f "
+
+foreground_templates = [
+  "{{ if gt .Code 0 }}p:error-fg{{ end }}"
+]
+
+[blocks.segments.properties]
+always_enabled = true
