@@ -1,0 +1,123 @@
+font-family = "MonoLisa Variable Regular"
+font-family-bold = "MonoLisa Variable Regular"
+font-family-italic = "MonoLisa Variable Italic"
+font-family-bold-italic = "MonoLisa Variable Italic"
+
+font-style = "Regular"
+font-style-bold = "Bold"
+font-style-italic = "Italic"
+font-style-bold-italic = "Bold Italic"
+
+font-variation = "wght=500"
+font-variation-bold = "wght=700"
+font-variation-italic = "wght=500"
+font-variation-bold-italic = "wght=700"
+
+# aalt disabled becasue it makes the font unreadable
+font-feature = "-aalt"
+font-feature = "calt"
+# case disabled for aethetics
+font-feature = "-case"
+font-feature = "ccmp"
+font-feature = "-dnom"
+# frac disabled because it damages numbers
+font-feature = "-frac"
+font-feature = "liga"
+font-feature = "locl"
+# numr disabled because it damages numbers
+font-feature = "-numr"
+font-feature = "onum"
+# ordn disabled as it shrinks and align top 'a' small
+font-feature = "-ordn"
+font-feature = "rlig"
+# sinf disabled as it makes numbers subscript
+font-feature = "-sinf"
+font-feature = "ss01"
+font-feature = "ss03"
+font-feature = "ss04"
+font-feature = "ss05"
+font-feature = "ss06"
+font-feature = "ss08"
+font-feature = "ss09"
+font-feature = "ss12"
+font-feature = "ss14"
+font-feature = "ss17"
+font-feature = "ss18"
+# sups disabled because it turns all numbers into superscript
+font-feature = "-sups"
+font-feature = "mark"
+font-feature = "mkmk"
+
+font-size = "18.0"
+# 2**26 or 64 Mib.
+scrollback-limit = "67108864"
+font-thicken = "true"
+theme = "rose-pine-moon"
+minimum-contrast = "3"
+mouse-hide-while-typing = "true"
+background-opacity = "0.9"
+background-blur-radius = "20"
+initial-window = "true"
+shell-integration = "fish"
+shell-integration-features = "no-cursor,sudo,title"
+#macos-titlebar-style = "transparent"
+#macos-titlebar-style = "hidden"
+macos-window-shadow = "true"
+macos-titlebar-proxy-icon = "hidden"
+macos-auto-secure-input = "true"
+macos-titlebar-style = "native"
+macos-secure-input-indication = "true"
+bold-is-bright = "true"
+clipboard-read = "allow"
+clipboard-write = "allow"
+clipboard-trim-trailing-spaces = "true"
+copy-on-select = "clipboard"
+cursor-color = "orange"
+cursor-style = "block"
+cursor-style-blink = "true"
+cursor-click-to-move = "false"
+cursor-opacity = "1.0"
+
+# The following line results in a crash
+#quit-after-last-window-closed = "true"
+
+# custom-shader-animation = "true"
+# custom-shader = "shaders/negative.glsl"
+# custom-shader = "shaders/bloom025.glsl"
+# custom-shader = "shaders/bettercrt.glsl"
+# custom-shader = "shaders/inside-the-matrix.glsl"
+
+quick-terminal-animation-duration = "0.08"
+fullscreen = "true"
+working-directory = "home"
+
+# window-padding-color = ""
+window-padding-balance = "true"
+window-padding-x = "3,2"
+window-padding-y = "3,2"
+window-title-font-family = "MonoLisa Variable Regular"
+window-colorspace = "display-p3"
+window-height = "200"
+window-width = "200"
+window-decoration = "true"
+window-step-resize = "true"
+window-inherit-working-directory = "false"
+window-inherit-font-size = "false"
+window-new-tab-position = "current"
+
+# The window save state is broken. The symptom is an inability to open ghostly. Disable.` See issue #
+window-save-state = "never"
+
+keybind = "super+i=inspector:toggle"
+keybind = "super+r=reload_config"
+
+# selection-invert-fg-bg = "false"
+selection-background = "orange"
+selection-foreground = "orange"
+
+adjust-cursor-thickness = "25%"
+
+macos-icon = "custom-style"
+macos-icon-frame = "plastic"
+macos-icon-ghost-color = "purple"
+macos-icon-screen-color = "black"
