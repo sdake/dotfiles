@@ -4,21 +4,21 @@
 #
 # Steven Dake <steven.dake@gmail.com>
 
-set --export HOMEBREW_PREFIX /opt/homebrew
-set --export HOMEBREW_CELLAR /opt/homebrew/Cellar
-set --export HOMEBREW_REPOSITORY /opt/homebrew
 set --export HOMEBREW_NO_ANALYTICS 1
+
+set --export HOMEBREW_PREFIX "/opt/homebrew"
+set --export HOMEBREW_PREFIX "/home/linuxbrew/.linuxbrew"
+
 set --export HOMEBREW_CASK_OPTS "--appdir=/Applications"
 set --export TIME_STYLE "%Y%m%d-%U-%H%M"
 
-fish_add_path /opt/homebrew/bin
-fish_add_path /opt/homebrew/sbin
-fish_add_path /opt/homebrew/opt/curl/bin
-fish_add_path /opt/homebrew/opt/gnu-sed/libexec/gnubin
-fish_add_path /opt/homebrew/opt/gnu-tar/libexec/gnubin
-fish_add_path /opt/homebrew/opt/ncurses/bin
-fish_add_path /opt/homebrew/opt/sqlite/bin
-
+fish_add_path $HOMEBREW_PREFIX/bin
+fish_add_path $HOMEBREW_PREFIX/sbin
+fish_add_path $HOMEBREW_PREFIX/opt/curl/bin
+fish_add_path $HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin
+fish_add_path $HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnubin
+fish_add_path $HOMEBREW_PREFIX/opt/ncurses/bin
+fish_add_path $HOMEBREW_PREFIX/opt/sqlite/bin
 
 if status is-interactive
     # Load all saved ssh keys
@@ -83,8 +83,7 @@ if status is-interactive
     set fish_cursor_default block blink
     set fish_cursor_visual block blink
 
-
-    fish_config theme choose "Rosé Pine"
+    fish_config theme choose "rose-pine-moon"
 
     ###
     #
