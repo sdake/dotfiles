@@ -49,7 +49,7 @@ font-feature = "mark"
 font-feature = "mkmk"
 
 font-size = "18.0"
-# 2**26 or 64 Mib.
+# 2**26. or 64 MiB.
 scrollback-limit = "67108864"
 font-thicken = "true"
 theme = "rose-pine-moon"
@@ -60,26 +60,28 @@ background-blur-radius = "20"
 initial-window = "true"
 shell-integration = "fish"
 shell-integration-features = "no-cursor,sudo,title"
-#macos-titlebar-style = "transparent"
-#macos-titlebar-style = "hidden"
 macos-window-shadow = "true"
 macos-titlebar-proxy-icon = "hidden"
 macos-auto-secure-input = "true"
 macos-titlebar-style = "native"
+# other choices: macos-titlebar-style = "transparent"
+#                macos-titlebar-style = "hidden"
 macos-secure-input-indication = "true"
 bold-is-bright = "true"
 clipboard-read = "allow"
 clipboard-write = "allow"
+clipboard-paste-protection = "false"
 clipboard-trim-trailing-spaces = "true"
-copy-on-select = "clipboard"
+clipboard-paste-bracketed-safe = "true"
+copy-on-select = "false"
 cursor-color = "orange"
 cursor-style = "block"
 cursor-style-blink = "true"
 cursor-click-to-move = "false"
 cursor-opacity = "1.0"
-
-# The following line results in a crash
-#quit-after-last-window-closed = "true"
+confirm-close-surface = "false"
+initial-window = "true"
+desktop-notifications = "false"
 
 # custom-shader-animation = "true"
 # custom-shader = "shaders/negative.glsl"
@@ -105,9 +107,6 @@ window-inherit-working-directory = "false"
 window-inherit-font-size = "false"
 window-new-tab-position = "current"
 
-# The window save state is broken. The symptom is an inability to open ghostly. Disable.` See issue #
-window-save-state = "never"
-
 keybind = "super+i=inspector:toggle"
 keybind = "super+r=reload_config"
 
@@ -121,3 +120,8 @@ macos-icon = "custom-style"
 macos-icon-frame = "plastic"
 macos-icon-ghost-color = "purple"
 macos-icon-screen-color = "black"
+
+# The following line results in a crash
+# The window save state is broken. The symptom is an inability to open ghostly. Disable.` See issue #
+#quit-after-last-window-closed = "true"
+window-save-state = "never"
