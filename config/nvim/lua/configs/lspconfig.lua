@@ -1,13 +1,39 @@
--- load defaults i.e lua_lsp
 require("nvchad.configs.lspconfig").defaults()
 
 local lspconfig = require "lspconfig"
 
--- EXAMPLE
-local servers = { "html", "cssls" }
+local servers = {
+  "autotools_ls",
+  "bashls",
+  "biome",
+  "buf_ls",
+  "clangd",
+  "cmake",
+  "cssls",
+  "cssmodules_ls",
+  "debputy",
+  "docker_compose_language_service",
+  "dockerls",
+  "dprint",
+  "fish_lsp",
+  "gopls",
+  "harper_ls",
+  "helm_ls",
+  "html",
+  "jsonls",
+  "lua_ls",
+  "pyright",
+  "pyright",
+  "ruff",
+  "rust_analyzer",
+  "taplo",
+  "ts_ls",
+  "vale_ls",
+  "yamlls",
+}
+
 local nvlsp = require "nvchad.configs.lspconfig"
 
--- lsps with default config
 for _, lsp in ipairs(servers) do
   lspconfig[lsp].setup {
     on_attach = nvlsp.on_attach,
@@ -15,10 +41,3 @@ for _, lsp in ipairs(servers) do
     capabilities = nvlsp.capabilities,
   }
 end
-
--- configuring single server, example: typescript
--- lspconfig.ts_ls.setup {
---   on_attach = nvlsp.on_attach,
---   on_init = nvlsp.on_init,
---   capabilities = nvlsp.capabilities,
--- }
