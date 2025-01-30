@@ -6,8 +6,8 @@
 
 set --export HOMEBREW_NO_ANALYTICS 1
 
-set --export HOMEBREW_PREFIX "/opt/homebrew"
 set --export HOMEBREW_PREFIX "/home/linuxbrew/.linuxbrew"
+set --export HOMEBREW_PREFIX "/opt/homebrew"
 
 set --export HOMEBREW_CASK_OPTS "--appdir=/Applications"
 set --export TIME_STYLE "%Y%m%d-%U-%H%M"
@@ -36,7 +36,7 @@ if status is-interactive
 
     # source "/opt/homebrew/share/google-cloud-sdk/path.fish.inc"
     # kubectl completion fish | source
-    # oh-my-posh completion fish | source
+    oh-my-posh completion fish | source
 
     carapace _carapace fish | source
     oh-my-posh init fish --config "$HOME/.config/oh-my-posh/config.toml" | source
@@ -53,8 +53,8 @@ if status is-interactive
     set --export MANPAGER "sh -c 'sed -u -e \"s/\\x1B\[[0-9;]*m//g; s/.\\x08//g\" | bat --language man'"
     set --export LS_COLORS "$(vivid generate rose-pine-moon)"
 
-    # set --export WEZTERM_LOG_FILE "$HOME/.logs/wezterm/wezterm.log"
-    # set --export WEZTERM_LOG_LEVEL DEBUG
+    set --export WEZTERM_LOG_FILE "$HOME/.config/logs/wezterm/wezterm.log"
+    set --export WEZTERM_LOG_LEVEL DEBUG
 
     set --export FZF_DEFAULT_COMMAND "rg --files --hidden --follow --no-ignore-vcs"
     set --export FZF_DEFAULT_OPTS "--height 75% --layout=reverse --border"
