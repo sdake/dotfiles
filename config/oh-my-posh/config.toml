@@ -1,31 +1,54 @@
+# NerdFont references:
+# nf-oct-zap = 0u26a1 = ⚡
+# nf-cod-folder = ea83
+# nf-oct-home = f46d
+# nf-ple-forwardslash_separator = e0bb
+# nf-ple-forwardslash_separator_redundant = e0bd
+# nf-cod-github = ea84
+# nf-cod-github_alt = eb00
+# nf-pl-branch = e0a0
+# nf-cod-source_control = ea68
+# nf-dev-git_branch = e725
+# nf-fa-code_branch = f126
+# nf-cod-server_process = eba2
+# nf-md-timer_outline = f051b
+# nf-seti-time_cop = e641
+# nf-pl-left_hard_divider = e0b0
+# chevron = 276f
+
 schema = "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json"
 version = 3
-console_title_template = "{{if .Root}} \u26a1 {{end}}{{.Folder | replace \"~\" \"🏚\" }} @ {{.HostName}}"
+use_legacy_filesystem = true
+use_system_color_scheme = false
+console_title_template = ""
+enable_system_accent = false
+enable_color_templates = false
+final_space = true
 
 [palette]
 git-fg = "#FFFFFF"
 git-bg = "#D67E00"
 path-fg = "#FFFFFF"
 path-bg = "#005BD6"
-error-bg = "#910000"
 error-fg = "#FFFFFF"
+error-bg = "#910000"
 time-fg = "#FFFFFF"
 time-bg = "#2E9599"
 prompt-fg = "#000000"
 
 [transient_prompt]
 background = "transparent"
-foreground = "P:prompt-fg"
+foreground = "p:prompt-fg"
 template = "{{ .Shell }}> "
 
 [[blocks]]
 type = "prompt"
 alignment = "left"
 
-# Path in format of HouseIcon / ...children.. / curent path.
+# Path in format of HouseIcon / ...children.. / current path.
 [[blocks.segments]]
 type = "root"
-background = "p:ath-bg"
+background = "p:path-bg"
 foreground = "p:path-fg"
 style = "plain"
 template = "\u26a1 "
@@ -39,13 +62,10 @@ template = " {{ .Path }} "
 trailing_diamond = "\ue0b0"
 
 [blocks.segments.properties]
-#folder_icon = "..."
+folder_icon = "\uea83"
+home_icon = "\uf46d"
 folder_separator_icon = "<transparent> \ue0bd </>"
-home_icon = "\ueb06"
 style = "unique"
-
-[blocks.segments.mapped_locations]
-"~/repos/" = ""
 
 # Git configuration in form of repo-name/branch-name.
 [[blocks.segments]]
@@ -53,12 +73,8 @@ type = "git"
 background = "p:git-bg"
 foreground = "p:git-fg"
 style = "powerline"
-template = " {{ .UpstreamIcon }}{{ .RepoName }} <p:git-fg>\ue0a0</>{{ .Commit.Refs.Heads }} "
+template = " \ueb00 {{ .RepoName }} <p:git-fg>\uea68</>{{ .Commit.Refs.Heads }} "
 powerline_symbol = "\ue0b0"
-
-[blocks.segments.properties]
-fetch_upstream_icon = true
-fetch_status = true
 
 [[blocks.segments]]
 type = "executiontime"
@@ -66,7 +82,7 @@ foreground = "p:time-fg"
 background = "p:time-bg"
 leading_diamond = "<transparent,p:time-bg>\ue0b0</>"
 style = "diamond"
-template = " <#fefefe></> {{ .FormattedMs }} "
+template = " <p:time-fg>\ue641</> {{ .FormattedMs }} "
 trailing_diamond = "\ue0b0"
 
 [blocks.segments.properties]
@@ -90,14 +106,12 @@ newline = true
 
 [[blocks.segments]]
 type = "status"
-foreground = "P:error-fg"
-background = "#000000"
+foreground = "p:error-fg"
+background = "p:error-bg"
 style = "plain"
 template = "\u276f "
 
-foreground_templates = [
-  "{{ if gt .Code 0 }}p:error-fg{{ end }}"
-]
+foreground_templates = ["{{ if gt .Code 0 }}p:error-fg{{ end }}"]
 
 [blocks.segments.properties]
 always_enabled = true
