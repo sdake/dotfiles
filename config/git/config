@@ -1,0 +1,22 @@
+[user]
+	name = Steven Dake
+	email = steven.dake@gmail.com
+
+[init]
+    defaultBranch = main
+
+[core]
+    editor = nvim
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true
+    light = true
+    side-by-side = true
+    features = coracias-caudatus
+
+[merge]
+    conflictstyle = zdiff3
