@@ -1,2 +1,2 @@
-# dotfiles
-Steve Dake's dotfiles.
+# dots
+Steve's Dotfiles
