@@ -1,3 +1,5 @@
+-- Dsired file formats: autotools, bash, protobuf, cmake, clang, css, docker, fish, go, helm, html, json, lua, markdown, python, rust, toml, typescript, yaml
+
 -- Formatters by file type
 local formatters_by_ft = {
   bash = { "beautysh" },
