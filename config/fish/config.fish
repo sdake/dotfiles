@@ -4,8 +4,6 @@
 #
 # Steven Dake <steven.dake@gmail.com>
 
-set --export HOMEBREW_NO_ANALYTICS 1
-
 set --export HOMEBREW_PREFIX "/home/linuxbrew/.linuxbrew"
 set --export HOMEBREW_PREFIX "/opt/homebrew"
 
@@ -40,6 +38,7 @@ if status is-interactive
 
     carapace _carapace fish | source
     oh-my-posh init fish --config "$HOME/.config/oh-my-posh/config.toml" | source
+    # source (/opt/homebrew/bin/starship init fish --print-full-init | psub)
 
     ###
     #
@@ -60,24 +59,6 @@ if status is-interactive
     set --export FZF_DEFAULT_OPTS "--height 75% --layout=reverse --border"
     set --export FZF_CTRL_T_COMMAND "$FZF_DEFAULT_COMMAND"
     set --export FZF_ALT_C_COMMAND "fd --type d . --color=never"
-
-    # set --export HFTOKEN "your_api_key_here"
-    # set --export OPENAI_API_KEY "your_api_key_here"
-    # set --export ANTHROPIC_API_KEY "your_api_key_here"
-    # set --export GOOGLE_API_KEY "your_api_key_here"
-    # set --export KAGI_API_KEY "your_api_key_here"
-    # set --export OPENAI_API_KEY="your_api_key_here"
-    # set --export ANTHROPIC_API_KEY="your_api_key_here"
-    # set --export AI21_API_KEY="your_api_key_here"
-    # set --export COHERE_API_KEY="your_api_key_here"
-    # set --export ALEPHALPHA_API_KEY="your_api_key_here"
-    # set --export HUGGINFACEHUB_API_KEY="your_api_key_here"
-    # set --export MISTRAL_API_KEY="your_api_key_here"
-    # set --export REKA_API_KEY="your_api_key_here"
-    # set --export TOGETHER_API_KEY="your_api_key_here"
-    # set --export GROQ_API_KEY="your_api_key_here"
-    # set --export DEEPSEEK_API_KEY="your_api_key_here"
-    # set --export LLMS_DEFAULT_MODEL="gpt-3.5-turbo"
 
     set fish_greeting
     set fish_cursor_default block blink

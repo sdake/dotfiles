@@ -1,0 +1,58 @@
+# This file contains fish universal variable definitions.
+# VERSION: 3.0
+SETUVAR --export ANALYTICS_OPT_OUT:1
+SETUVAR --export AZURE_CORE_COLLECT_TELEMETRY:0
+SETUVAR --export CARGO_REGISTRY_TOKEN:
+SETUVAR --export DISABLE_ANALYTICS:1
+SETUVAR --export DOTNET_CLI_TELEMETRY_OPTOUT:1
+SETUVAR --export DO_NOT_TRACK:1
+SETUVAR --export ELECTRON_NO_ATTACH_CONSOLE:1
+SETUVAR --export GATSBY_TELEMETRY_DISABLED:1
+SETUVAR --export HF_HUB_DISABLE_EXPERIMENTAL_WARNING:1
+SETUVAR --export HF_HUB_DISABLE_TELEMETRY:1
+SETUVAR --export HF_HUB_ENABLE_HF_TRANSFER:1
+SETUVAR --export HOMEBREW_NO_ANALYTICS:1
+SETUVAR --export HYPOTHESIS_PROFILE:no_telemetry
+SETUVAR --export NEXT_TELEMETRY_DISABLED:1
+SETUVAR --export NO_TELEMETRY:1
+SETUVAR --export PLAYWRIGHT_SKIP_BROWSER_USAGE_STATS:1
+SETUVAR --export POWERSHELL_TELEMETRY_OPTOUT:1
+SETUVAR --export SAM_CLI_TELEMETRY:0
+SETUVAR --export STNOUPGRADE:1
+SETUVAR --export STRIPE_CLI_TELEMETRY_OPTOUT:1
+SETUVAR --export TELEMETRY_DISABLED:1
+SETUVAR --export VCPKG_DISABLE_METRICS:1
+SETUVAR --export VLLM_DO_NOT_TRACK:1
+SETUVAR --export VLLM_NO_USAGE_STATS:1
+SETUVAR --export VLLM_USAGE_SOURCE:development
+SETUVAR __fish_initialized:3400
+SETUVAR _fisher_upgraded_to_4_4:\x1d
+SETUVAR fish_color_autosuggestion:brblack
+SETUVAR fish_color_cancel:\x2dr
+SETUVAR fish_color_command:blue
+SETUVAR fish_color_comment:red
+SETUVAR fish_color_cwd:green
+SETUVAR fish_color_cwd_root:red
+SETUVAR fish_color_end:green
+SETUVAR fish_color_error:brred
+SETUVAR fish_color_escape:brcyan
+SETUVAR fish_color_history_current:\x2d\x2dbold
+SETUVAR fish_color_host:normal
+SETUVAR fish_color_host_remote:yellow
+SETUVAR fish_color_normal:normal
+SETUVAR fish_color_operator:brcyan
+SETUVAR fish_color_param:cyan
+SETUVAR fish_color_quote:yellow
+SETUVAR fish_color_redirection:cyan\x1e\x2d\x2dbold
+SETUVAR fish_color_search_match:bryellow\x1e\x2d\x2dbackground\x3dbrblack
+SETUVAR fish_color_selection:white\x1e\x2d\x2dbold\x1e\x2d\x2dbackground\x3dbrblack
+SETUVAR fish_color_status:red
+SETUVAR fish_color_user:brgreen
+SETUVAR fish_color_valid_path:\x2d\x2dunderline
+SETUVAR --export fish_key_bindings:fish_vi_key_bindings
+SETUVAR fish_pager_color_completion:normal
+SETUVAR fish_pager_color_description:yellow\x1e\x2di
+SETUVAR fish_pager_color_prefix:normal\x1e\x2d\x2dbold\x1e\x2d\x2dunderline
+SETUVAR fish_pager_color_progress:brwhite\x1e\x2d\x2dbackground\x3dcyan
+SETUVAR fish_pager_color_selected_background:\x2dr
+SETUVAR fish_user_paths:/opt/homebrew/opt/sqlite/bin\x1e/opt/homebrew/opt/ncurses/bin\x1e/opt/homebrew/opt/gnu\x2dtar/libexec/gnubin\x1e/opt/homebrew/opt/gnu\x2dsed/libexec/gnubin\x1e/opt/homebrew/opt/curl/bin\x1e/opt/homebrew/sbin\x1e/opt/homebrew/bin
