@@ -1,178 +1,40 @@
-# Please note, my configuration uses a proprietary font:
-#     MonoLisaVariable Nerd Font
-#
-# fish$ otfinfo MonoLisa/MonoLisaVariableNerdFont-Regular.ttf --info
-# Family:              MonoLisaVariable Nerd Font
-# Subfamily:           Regular
-# Full name:           MonoLisaVariable Nerd Font
-# PostScript name:     MonoLisaVariableNF-Regular
-# Version:             Version 2.015;Nerd Fonts 3.3.0
-# Unique ID:           MonoLisaVariable Nerd Font 3.3.0
-# Description:         font follows function
-# Designer:            Marcus Sterz
-# Designer URL:        https://www.facetype.org
-# Manufacturer:        FaceType
-# Vendor URL:          https://www.facetype.org
-# Trademark:           MonoLisa is a trademark of FaceType.
-# Copyright:           Copyright © 2020 by Marcus Sterz. All rights reserved.
-# Vendor ID:           FCTP
-# Permissions:         Preview & Print
+# Ghostty Configuration
+# Last updated: 2025-03-07
 
-
-font-family = "MonoLisaVariable Nerd Font"
-font-family-bold = "MonoLisaVariable Nerd Font"
-font-family-italic = "MonoLisaVariable Nerd Font Italic"
-font-family-italic = "MonoLisaVariable Nerd Font Italic"
-
-font-style = "Regular"
-font-style-bold = "Bold"
-font-style-italic = "Italic"
-font-style-bold-italic = "Bold Italic"
-
-font-variation = "wght=500"
-font-variation-bold = "wght=700"
-font-variation-italic = "wght=500"
-font-variation-bold-italic = "wght=700"
-
-# fish$ otfinfo MonoLisa/MonoLisaVariableNerdFont-Regular.ttf --features
-# aalt	Access All Alternates
-# calt	Contextual Alternates
-# case	Case-Sensitive Forms
-# ccmp	Glyph Composition/Decomposition
-# dnom	Denominators
-# frac	Fractions
-# liga	Standard Ligatures
-# mark	Mark Positioning
-# mkmk	Mark to Mark Positioning
-# numr	Numerators
-# onum	Oldstyle Figures
-# ordn	Ordinals
-# rlig	Required Ligatures
-# sinf	Scientific Inferiors
-# ss01	Stylistic Set 1
-# ss03	Stylistic Set 3
-# ss04	Stylistic Set 4
-# ss05	Stylistic Set 5
-# ss06	Stylistic Set 6
-# ss08	Stylistic Set 8
-# ss09	Stylistic Set 9
-# ss12	Stylistic Set 12
-# ss14	Stylistic Set 14
-# ss17	Stylistic Set 17
-# ss18	Stylistic Set 18
-# subs	Subscript
-# sups	Superscript
-
-# aalt (Access all alternates) disabled because it makes the font unreadable
-font-feature = "-aalt"
+font-family = "MonoLisa Static"
+font-size = "20"
 font-feature = "calt"
-# case (Case sensitive forms) disabled for aethetics
-font-feature = "-case"
-font-feature = "ccmp"
-# dnom (Denominators) appears disabled without stated rationale
-font-feature = "-dnom"
-# frac (Fractions) disabled because it damages numbers
-font-feature = "-frac"
-font-feature = "liga"
-font-feature = "locl"
-# numr (Numerators) disabled because it damages numbers
-font-feature = "-numr"
-font-feature = "onum"
-# ordn (Ordinals) disabled as it shrinks and align top 'a' small
-font-feature = "-ordn"
-font-feature = "rlig"
-# sinf (Scientific Inferiors) disabled as it makes numbers subscript
-font-feature = "-sinf"
-font-feature = "ss01"
-font-feature = "ss03"
-font-feature = "ss04"
-font-feature = "ss05"
-font-feature = "ss06"
-font-feature = "ss08"
-font-feature = "ss09"
-font-feature = "ss12"
-font-feature = "ss14"
-font-feature = "ss17"
-font-feature = "ss18"
-# sups (Superscript) disabled because it turns all numbers into superscript
-font-feature = "-sups"
-font-feature = "mark"
-font-feature = "mkmk"
 
-font-size = "18.0"
-# 2**26. or 64 MiB.
-scrollback-limit = "67108864"
-font-thicken = "true"
-theme = "rose-pine-moon"
-minimum-contrast = "3"
-mouse-hide-while-typing = "true"
-background-opacity = "0.9"
-background-blur-radius = "20"
-initial-window = "true"
-shell-integration = "fish"
-shell-integration-features = "no-cursor,sudo,title"
-macos-window-shadow = "true"
-macos-titlebar-proxy-icon = "hidden"
-macos-auto-secure-input = "true"
-macos-titlebar-style = "native"
-# other choices: macos-titlebar-style = "transparent"
-#                macos-titlebar-style = "hidden"
-macos-secure-input-indication = "true"
-bold-is-bright = "true"
-clipboard-read = "allow"
-clipboard-write = "allow"
-clipboard-paste-protection = "false"
-clipboard-trim-trailing-spaces = "true"
-clipboard-paste-bracketed-safe = "true"
-copy-on-select = "false"
-cursor-color = "orange"
-cursor-style = "block"
-cursor-style-blink = "true"
-cursor-click-to-move = "false"
-cursor-opacity = "1.0"
-confirm-close-surface = "false"
-initial-window = "true"
-desktop-notifications = "false"
+# mouse-hide-while-typing = "true"
 
-# custom-shader-animation = "true"
-# custom-shader = "shaders/negative.glsl"
-# custom-shader = "shaders/bloom025.glsl"
-# custom-shader = "shaders/bettercrt.glsl"
-# custom-shader = "shaders/inside-the-matrix.glsl"
-
-quick-terminal-animation-duration = "0.08"
-fullscreen = "true"
-working-directory = "home"
-
-# window-padding-color = ""
-window-padding-balance = "true"
-window-padding-x = "3,2"
-window-padding-y = "3,2"
-window-title-font-family = "MonoLisaVariable Nerd Font"
-window-colorspace = "display-p3"
-window-height = "200"
-window-width = "200"
-window-decoration = "true"
 window-step-resize = "true"
-window-inherit-working-directory = "false"
-window-inherit-font-size = "false"
-window-new-tab-position = "current"
+fullscreen = "true"
+scrollback-limit = "67108864"
+term = "xterm-ghostty"
+command = "/opt/homebrew/bin/fish --login --interactive"
+maximize = "true"
+cursor-color = "#FF8000"
+cursor-opacity = "1.0"
+#cursor-style = "block"
+cursor-style = "block_hollow"
+cursor-invert-fg-bg = "true"
+cursor-style-blink = "false"
+adjust-cursor-thickness = "75%"
+shell-integration-features = "no-cursor,sudo,title"
+shell-integration = "fish"
 
-keybind = "super+i=inspector:toggle"
-keybind = "super+r=reload_config"
+theme = "light:catppuccin-latte,dark:catppuccin-mocha"
+window-theme = "auto"
 
-# selection-invert-fg-bg = "false"
-selection-background = "orange"
-selection-foreground = "orange"
+window-padding-x = "12"
+window-padding-y = "12"
+window-decoration = "true"
+background-opacity = "1.0"
+initial-window = "true"
+copy-on-select = "true"
+clipboard-trim-trailing-spaces = "true"
 
-adjust-cursor-thickness = "25%"
-
-macos-icon = "custom-style"
-macos-icon-frame = "plastic"
-macos-icon-ghost-color = "purple"
-macos-icon-screen-color = "black"
-
-# The following line results in a crash
-# The window save state is broken. The symptom is an inability to open ghostly. Disable.` See issue #
-#quit-after-last-window-closed = "true"
-window-save-state = "never"
+keybind = "super+c=copy_to_clipboard"
+keybind = "super+v=paste_from_clipboard"
+keybind = "super+t=new_tab"
+keybind = "super+w=close_surface"
