@@ -4,27 +4,45 @@
 #
 # Steven Dake <steven.dake@gmail.com>
 
-set --export HOMEBREW_PREFIX "/home/linuxbrew/.linuxbrew"
 set --export HOMEBREW_PREFIX "/opt/homebrew"
 
 set --export HOMEBREW_CASK_OPTS "--appdir=/Applications"
-set --export TIME_STYLE "%Y%m%d-%U-%H%M"
+set --export TIME_STYLE "+%Y%m%d-%U-%H%M"
 
 fish_add_path $HOMEBREW_PREFIX/bin
 fish_add_path $HOMEBREW_PREFIX/sbin
 fish_add_path $HOMEBREW_PREFIX/opt/curl/bin
 fish_add_path $HOMEBREW_PREFIX/opt/gnu-sed/libexec/gnubin
 fish_add_path $HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnubin
+fish_add_path $HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin
 fish_add_path $HOMEBREW_PREFIX/opt/ncurses/bin
 fish_add_path $HOMEBREW_PREFIX/opt/sqlite/bin
+
+function fish_mode_prompt
+  switch $fish_bind_mode
+    case default
+      set_color --bold red
+      echo 'N'
+    case insert
+      set_color --bold green
+      echo 'I'
+    case replace_one
+      set_color --bold green
+      echo 'R'
+    case visual
+      set_color --bold brmagenta
+      echo 'V'
+    case '*'
+      set_color --bold red
+      echo '?'
+  end
+  set_color normal
+end
+
 
 if status is-interactive
     # Load all saved ssh keys
     ssh-add --apple-load-keychain ^/dev/null
-
-    # Uncomment to enforce the use of TERM="wezterm". An alternative would be TERM="xterm-256color"
-    # set --export TERM "wezterm"
-    # set --export TERM "xterm-256color"
 
     # I use Zen Browser, which is Firefox, that is reasonable to use. The
     # main advantage is to scale work vertically. Chrome scales work
@@ -32,13 +50,9 @@ if status is-interactive
     # To see configuration is Zen, run `fish_config` which will launch a new window 
     set --export BROWSER "/Applications/Zen Browser.app/"
 
-    # source "/opt/homebrew/share/google-cloud-sdk/path.fish.inc"
-    # kubectl completion fish | source
-    oh-my-posh completion fish | source
-
-    carapace _carapace fish | source
-    oh-my-posh init fish --config "$HOME/.config/oh-my-posh/config.toml" | source
-    # source (/opt/homebrew/bin/starship init fish --print-full-init | psub)
+    set --export STARSHIP_CONFIG $HOME/.config/starship/starship.toml
+    #    carapace _carapace fish | source
+    source (starship init fish --print-full-init | psub)
 
     ###
     #
@@ -50,7 +64,7 @@ if status is-interactive
     set --export KUBE_EDITOR nvim
     set --export BUNDLER_EDITOR nvim
     set --export MANPAGER "sh -c 'sed -u -e \"s/\\x1B\[[0-9;]*m//g; s/.\\x08//g\" | bat --language man'"
-    set --export LS_COLORS "$(vivid generate rose-pine-moon)"
+    #    set --export LS_COLORS "$(vivid generate rose-pine-moon)"
 
     set --export WEZTERM_LOG_FILE "$HOME/.config/logs/wezterm/wezterm.log"
     set --export WEZTERM_LOG_LEVEL DEBUG
@@ -63,8 +77,12 @@ if status is-interactive
     set fish_greeting
     set fish_cursor_default block blink
     set fish_cursor_visual block blink
+    set fish_cursor_default block blink
+    set fish_cursor_insert block blink
+    set fish_cursor_external block blink
+    set fish_cursor_visual block blink
+    fish_vi_key_bindings insert
 
-    fish_config theme choose "rose-pine-moon"
 
     ###
     #
@@ -72,7 +90,6 @@ if status is-interactive
 
     alias cat="bat"
     alias vi="$EDITOR"
-    alias ls="eza --header --color=always --icons=always --time-style=+$TIME_STYLE"
     alias hex="hexyl"
     alias df="duf"
     alias du="dust"
@@ -86,8 +103,8 @@ if status is-interactive
     alias rh104="ssh -p 20422 98.165.69.213"
     alias rh105="ssh -p 10522 98.165.69.213"
     alias rh100="ssh -p 10022 98.165.69.213"
-
-    function fish_mode_prompt
-        # Disable vi mode indicator
-    end
+    alias rh106="ssh -p 10622 98.165.69.213"
+    alias s6="ssh -p 10622 98.165.69.213"
+    alias a6="ssh -p 10622 arnold@98.165.69.213"
 end
+fish_config theme choose "catpuccin-latte"
