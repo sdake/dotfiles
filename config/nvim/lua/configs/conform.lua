@@ -1,67 +1,96 @@
--- Dsired file formats: autotools, bash, protobuf, cmake, clang, css, docker, fish, go, helm, html, json, lua, markdown, python, rust, toml, typescript, yaml
+local M = {}
 
--- Formatters by file type
-local formatters_by_ft = {
-  bash = { "beautysh" },
-  c = { "clang-format" },
-  cmake = { "cmake_format" },
-  cpp = { "clang-format" },
-  css = { "prettier" },
-  fish = { "fish_indent" },
-  go = { "gofumpt", "goimports" },
-  html = { "prettier" },
-  javascript = { "prettier" },
-  json = { "prettier", "fixjson" },
-  lua = { "stylua" },
-  markdown = { "prettier", "cbfmt", "markdown-toc" },
-  proto = { "buf" },
-  python = { "black", "isort" },
-  rust = { "rustfmt" },
-  toml = { "taplo" },
-  typescript = { "prettier" },
-  yaml = { "yamlfix" },
+-- Formatter configurations with standardized settings
+M.formatters = {
+    -- Lua formatting
+    stylua = {
+        prepend_args = {
+            "--column-width",
+            "100",
+            "--indent-type",
+            "Spaces",
+            "--indent-width",
+            "4",
+            "--quote-style",
+            "AutoPreferDouble",
+            "--call-parentheses",
+            "Always",
+        },
+    },
+
+    -- Web and documentation formatting
+    prettier = {
+        prepend_args = {
+            "--print-width",
+            "100",
+            "--prose-wrap",
+            "always",
+            "--tab-width",
+            "4",
+        },
+    },
+
+    -- Markdown TOC generation
+    ["markdown-toc"] = {
+        prepend_args = {
+            "--bullets='-'",
+            "--max-depth=4",
+        },
+    },
 }
 
--- Formatter individual configs
-local formatters = {
-  stylua = {
-    prepend_args = {
-      "--column-width",
-      "100",
-      "--indent-type",
-      "Spaces",
-      "--indent-width",
-      "2",
-      "--quote-style",
-      "AutoPreferDouble",
-      "--call-parentheses",
-      "Always",
+-- Comprehensive formatter mappings by file type
+M.formatters_by_ft = {
+    -- Shell and system
+    bash = { "beautysh" },
+    fish = { "fish_indent" },
+
+    -- C/C++ ecosystem
+    c = { "clang-format" },
+    cpp = { "clang-format" },
+    cmake = { "cmake_format" },
+
+    -- Web development
+    css = { "prettier" },
+    html = { "prettier" },
+    javascript = { "prettier" },
+    typescript = { "prettier" },
+
+    -- Configuration formats
+    json = { "prettier", "fixjson" },
+    yaml = { "yamlfix" },
+    toml = { "taplo" },
+
+    -- Container and service definitions
+    dockerfile = { "lsp" },
+    proto = { "buf" },
+
+    -- Programming languages
+    go = { "gofumpt", "goimports" },
+    lua = { "stylua" },
+    python = { "black", "isort" },
+    rust = { "rustfmt" },
+
+    -- Documentation
+    markdown = {
+        "prettier",
+        "markdown-toc",
     },
-  },
-  prettier = {
-    prepend_args = {
-      "--print-width",
-      "100",
-      "--prose-wrap",
-      "always",
-      "--tab-width",
-      "2",
-    },
-  },
-  cbfmt = {
-    prepend_args = {
-      "--best-effort",
-    },
-  },
-  ["markdown-toc"] = {
-    prepend_args = {
-      "--bullets='-'",
-      "--max-depth=4",
-    },
-  },
 }
 
-return {
-  formatters = formatters,
-  formatters_by_ft = formatters_by_ft,
+-- Diagnostic setup for troubleshooting
+M.setup = {
+    -- Enable detailed logging for debugging
+    log_level = vim.log.levels.INFO,
+
+    -- Format behavior configuration
+    format_on_save = {
+        timeout_ms = 3000,
+        lsp_fallback = true,
+    },
+
+    -- Error notification configuration
+    notify_on_error = true,
 }
+
+return M
