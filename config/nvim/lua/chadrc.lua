@@ -12,31 +12,17 @@ M.mason = {
 }
 
 M.base46 = {
-    theme = "rosepinedawn",
-
-    -- hl_override = {
-    -- 	Comment = { italic = true },
-    -- 	["@comment"] = { italic = true },
-    -- },
+    theme = "catppuccin",
 }
 
--- M.nvdash = { load_on_startup = true }
--- M.ui = {
---       tabufline = {
---          lazyload = false
---      }
---}
---local osc52 = require("configs.osc52")
+M.nvdash = {
+    load_on_startup = true,
+}
 
--- Initialize terminal-aware clipboard
-local terminal_clip = require("configs.terminal_clipboard")
-vim.g.clipboard = terminal_clip.clipboard
-
--- Setup verification tools
-require("configs.clipboard_verify").setup()
-
-M.setup = function()
-    vim.api.nvim_set_var("clipboard", osc52.clipboard)
-end
+M.ui = {
+    tabufline = {
+        lazyload = false,
+    },
+}
 
 return M
