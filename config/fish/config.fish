@@ -4,7 +4,11 @@
 #
 # Steven Dake <steven.dake@gmail.com>
 
-set --export HOMEBREW_PREFIX "/opt/homebrew"
+if test (uname) = "Linux"
+    set --export HOMEBREW_PREFIX "/home/linuxbrew/.linuxbrew"
+else
+    set --export HOMEBREW_PREFIX "/opt/homebrew"
+end
 
 set --export HOMEBREW_CASK_OPTS "--appdir=/Applications"
 set --export TIME_STYLE "+%Y%m%d-%U-%H%M"
