@@ -47,6 +47,9 @@ end
 if status is-interactive
     # Load all saved ssh keys
     ssh-add --apple-load-keychain ^/dev/null
+    set --export --global LDFLAGS "-L${HOMEBREW_PREFIX}/glibc/lib"
+    set --export --global CPPFLAGS "-I${HOMEBREW_PREFIX}/glibc/include"
+
 
     # I use Zen Browser, which is Firefox, that is reasonable to use. The
     # main advantage is to scale work vertically. Chrome scales work
