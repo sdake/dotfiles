@@ -111,4 +111,4 @@ if status is-interactive
     alias s6="ssh -p 10622 98.165.69.213"
     alias a6="ssh -p 10622 arnold@98.165.69.213"
 end
-fish_config theme choose "catpuccin-latte"
+fish_config theme choose "catpuccin-fish"

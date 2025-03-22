@@ -1,1 +1,1 @@
-set --universal --export LS_COLORS $(vivid generate catppuccin-latte)
+set --universal --export LS_COLORS $(vivid generate catppuccin-mocha)
