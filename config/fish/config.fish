@@ -45,8 +45,11 @@ end
 
 
 if status is-interactive
-    # Load all saved ssh keys
-    ssh-add --apple-load-keychain ^/dev/null
+    # Only load SSH keys on my terminal
+    if test (uname) = "Darwin"
+        ssh-add --apple-load-keychain ^/dev/null
+    end
+    #
 #    set --export --global LDFLAGS "-L$HOMEBREW_PREFIX/glibc/lib"
 #    set --export --global CPPFLAGS "-I$HOMEBREW_PREFIX/glibc/include"
 
