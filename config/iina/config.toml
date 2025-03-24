@@ -1,0 +1,38 @@
+###
+#
+# OSD plugin for IINA using MPV. Minimal approach.
+
+# core elements
+#
+osd-level=1
+osd-duration=1000
+osd-font-size=35
+osd-scale=0.6
+osd-bar-width=1
+osd-bar-h=2
+osd-color='#FFFFFF'
+osd-border-color='#000000'
+osd-border-size=1
+osd-shadow-offset=1
+osd-shadow-color='#000000'
+
+# Display elements
+#
+osd-status-msg='${time-pos} / ${duration} (${percent-pos}%)'
+osd-playing-msg='${media-title}'
+osd-bar=yes
+osd-bar-align-y=0.8
+
+# Control indicators
+#
+osd-msg3='${time-remaining}'
+osd-msg-pos=5
+script-opts=osc-layout=bottombar
+osc-seekbarstyle=bar
+osc-deadzonesize=1
+
+# Performance
+# 
+osd-ass-vsfilter-blur-compat=no
+osd-ass-force-style=Kerning=yes
+osd-font-provider=auto
