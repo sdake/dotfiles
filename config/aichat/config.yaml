@@ -1,0 +1,7 @@
+theme:
+  custom:
+    background_color: "#f5f5ff"
+    foreground_color: "#5b5b76"
+    selection_color: "#b3b3cc"
+    accent_color: "#367cd4"
+  name: custom
