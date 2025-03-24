@@ -1,0 +1,33 @@
+brew "mas"
+mas "Bit Fiddle", id: 669462988
+mas "Boop", id: 1518425043
+mas "Brother iPrint&Scan", id: 1193539993
+mas "Codye", id: 1516894961
+mas "Color UI", id: 1092899208
+mas "ColorSlurp", id: 1287239339
+mas "Cursor Pro", id: 1447043133
+mas "DaisyDisk", id: 411643860
+mas "Elmedia Video Player", id: 1044549675
+mas "Entity Pro", id: 1503988785
+mas "Fello AI", id: 6447705369
+mas "Fig Player", id: 1612400976
+mas "Fly AI", id: 6449296004
+mas "Gifski", id: 1351639930
+mas "GrandPerspective", id: 1111570163
+mas "Keystroke Pro", id: 1572206224
+mas "MetaImage", id: 1397099749
+mas "Mirror Magnet", id: 1563698880
+mas "Monodraw", id: 920404675
+mas "PCalc", id: 403504866
+mas "Paletter", id: 1494948845
+mas "Pixelmator Pro", id: 1289583905
+mas "ProTime", id: 1663671994
+mas "Serial", id: 877615577
+mas "Shell Fish", id: 1336634154
+mas "System Watcher", id: 1269106895
+mas "Tailscale", id: 1475387142
+mas "Textual IRC Client", id: 1262957439
+mas "Usage", id: 1561788435
+mas "VisualDiffer", id: 412386481
+mas "WebSSH", id: 497714887
+mas "iStatistica Pro", id: 1447778660
