@@ -1,0 +1,21 @@
+[[plugin.prepend_fetchers]]
+id = "mime"
+name = "*"
+run = "mime-ext"
+prio = "high"
+
+[plugin]
+prepend_preloaders = [
+  # Replace magick, image, video with mediainfo
+  { mime = "{audio,video,image}/*", run = "mediainfo" },
+  { mime = "application/subrip", run = "mediainfo" },
+]
+prepend_previewers = [
+  # Replace magick, image, video with mediainfo
+  { name = "*.md", run = "glow" },
+  { mime = "{audio,video,image}/*", run = "mediainfo" },
+  { mime = "application/subrip", run = "mediainfo" },
+]
+# There are more extensions which are supported by mediainfo.
+# Just add file's MIME type to `previewers`, `preloaders` above.
+# https://mediaarea.net/en/MediaInfo/Support/Formats
