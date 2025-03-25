@@ -1,0 +1,22 @@
+# .dotignore - Patterns to exclude from dotfiles tracking
+# Each line is a bash glob pattern relative to $HOME/.config
+#
+# Glob syntax quick reference:
+#   * - matches any string of characters
+#   ? - matches any single character
+#   [abc] - matches one character given in the bracket
+#   ** - matches directories recursively
+#
+# Examples:
+# fish/conf.d/*.secret       # Ignore files with .secret extension in fish/conf.d
+# nvim/lazy-lock.json        # Ignore lock files
+# **/node_modules            # Ignore all node_modules directories
+# gcloud/**                  # Ignore everything in gcloud
+
+fish/conf.d/api-keys.fish
+fish/fish_variables
+experiments
+instruct-tuning
+monolisa
+tools
+lozy-lock.lua
