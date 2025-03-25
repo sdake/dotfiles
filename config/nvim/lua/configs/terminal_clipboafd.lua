@@ -28,7 +28,7 @@ M.clipboard = {
         ["+"] = function(lines)
             local env = detect_environment()
             local osc52 = require("vim.ui.clipboard.osc52")
-
+            
             if env.tmux then
                 vim.g.clipboard_max_size = 1048576
                 return osc52.copy(lines, {
@@ -36,19 +36,19 @@ M.clipboard = {
                     max_size = vim.g.clipboard_max_size,
                 })
             end
-
+            
             if env.ssh then
                 return osc52.copy(lines, {
                     silent = true,
                     timeout = 100,
                 })
             end
-
+            
             return osc52.copy(lines)
         end,
         ["*"] = function(lines)
             return M.clipboard.copy["+"](lines)
-        end,
+        end
     },
     paste = {
         ["+"] = function()
@@ -62,8 +62,8 @@ M.clipboard = {
         end,
         ["*"] = function()
             return M.clipboard.paste["+"]()
-        end,
-    },
+        end
+    }
 }
 
 -- Setup function to initialize clipboard system
