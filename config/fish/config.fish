@@ -21,6 +21,7 @@ fish_add_path $HOMEBREW_PREFIX/opt/gnu-tar/libexec/gnubin
 fish_add_path $HOMEBREW_PREFIX/opt/coreutils/libexec/gnubin
 fish_add_path $HOMEBREW_PREFIX/opt/ncurses/bin
 fish_add_path $HOMEBREW_PREFIX/opt/sqlite/bin
+fish_add_path $HOMEBREW_PREFIX/opt/file-formula/bin
 
 function fish_mode_prompt
   switch $fish_bind_mode
