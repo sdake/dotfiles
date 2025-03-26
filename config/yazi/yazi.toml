@@ -19,3 +19,6 @@ prepend_previewers = [
 # There are more extensions which are supported by mediainfo.
 # Just add file's MIME type to `previewers`, `preloaders` above.
 # https://mediaarea.net/en/MediaInfo/Support/Formats
+
+[manager]
+show_hidden = true
