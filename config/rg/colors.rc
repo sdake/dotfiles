@@ -1,0 +1,14 @@
+# ripgrep configuration file
+
+# Search results styling
+--colors=path:fg:blue
+--colors=path:style:bold
+--colors=line:fg:240
+--colors=match:fg:red
+--colors=match:style:bold
+
+# Always use smart case (ignores case unless pattern contains uppercase)
+--smart-case
+
+# Better formatting
+--pretty
