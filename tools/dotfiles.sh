@@ -1,932 +1,460 @@
-#!/bin/bash
-###
+#!/usr/bin/env bash
 #
-# Copyright (c) 2025 Steven Dake (steven.dake@gmail.com)
-#
-# This script manages config files between $HOME/.config and $HOME/repos/dotfiles/config
-# using a distribution.toml file to specify which files to include.
-###
+# dotfiles.sh - Consolidated dotfiles management tool
+# Manages configuration files between local system and git repository
 
 set -e
 
-CONFIG_DIR="$HOME/.config"
-DOTFILES_REPO="$HOME/repos/dotfiles"
-DOTFILES_CONFIG="$DOTFILES_REPO/config"
-DISTRIBUTION_FILE="$DOTFILES_REPO/distribution.toml"
-DOTIGNORE_FILE="$DOTFILES_REPO/.dotignore"
+# ANSI color codes
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+BOLD='\033[1m'
 
-# Check if distribution.toml exists
-if [ ! -f "$DISTRIBUTION_FILE" ]; then
-    echo "Error: distribution.toml file not found at $DISTRIBUTION_FILE"
+# Status symbols
+CHECK_MARK="✓"
+CROSS_MARK="✗"
+WARNING_MARK="⚠"
+INFO_MARK="ℹ"
+ARROW_MARK="→"
+
+# Paths
+REPO_DIR="$HOME/repos/dotfiles"
+CONFIG_DIR="$HOME/.config"
+DISTRIBUTION_FILE="$REPO_DIR/distribution.toml"
+DOTIGNORE_FILE="$REPO_DIR/.dotignore"
+
+# Command usage
+usage() {
+    echo -e "${BOLD}Usage:${NC} $(basename $0) <+command> [options]"
+    echo
+    echo "Commands:"
+    echo "  +sync          - Sync files from \$HOME/.config to \$HOME/repos/dotfiles/config"
+    echo "  +status        - Show status of files in distribution.toml"
+    echo "  +install       - Install files from \$HOME/repos/dotfiles/config to \$HOME/.config"
+    echo "  +add <path>    - Add a file or directory to distribution.toml"
+    echo "  +remove <path> - Remove a file or directory from distribution.toml (doesn't delete actual files)"
+    echo "  +debug         - Run diagnostic checks on distribution file"
+    echo "  +help          - Show this help message"
+    echo
+    echo "Files matching patterns in \$HOME/repos/dotfiles/.dotignore will be skipped"
+    echo
     exit 1
-fi
+}
+
+# Check if required paths exist
+check_paths() {
+    if [ ! -d "$REPO_DIR" ]; then
+        echo -e "${RED}${CROSS_MARK} Repository directory not found: $REPO_DIR${NC}"
+        exit 1
+    fi
+
+    if [ ! -f "$DISTRIBUTION_FILE" ]; then
+        echo -e "${RED}${CROSS_MARK} Distribution file not found: $DISTRIBUTION_FILE${NC}"
+        exit 1
+    fi
+
+    # Create config directory if it doesn't exist
+    if [ ! -d "$CONFIG_DIR" ]; then
+        echo -e "${YELLOW}${WARNING_MARK} Config directory not found, creating: $CONFIG_DIR${NC}"
+        mkdir -p "$CONFIG_DIR"
+    fi
+}
 
 # Create .dotignore file if it doesn't exist
-if [ ! -f "$DOTIGNORE_FILE" ]; then
-    echo "# .dotignore - Patterns to exclude from dotfiles tracking" > "$DOTIGNORE_FILE"
-    echo "# Each line is a bash glob pattern relative to \$HOME/.config" >> "$DOTIGNORE_FILE"
-    echo "#" >> "$DOTIGNORE_FILE"
-    echo "# Glob syntax quick reference:" >> "$DOTIGNORE_FILE"
-    echo "#   * - matches any string of characters" >> "$DOTIGNORE_FILE"
-    echo "#   ? - matches any single character" >> "$DOTIGNORE_FILE"
-    echo "#   [abc] - matches one character given in the bracket" >> "$DOTIGNORE_FILE"
-    echo "#   ** - matches directories recursively" >> "$DOTIGNORE_FILE"
-    echo "#" >> "$DOTIGNORE_FILE"
-    echo "# Examples:" >> "$DOTIGNORE_FILE"
-    echo "fish/conf.d/api-keys.fish    # Ignore specific file with sensitive data" >> "$DOTIGNORE_FILE"
-    echo "# fish/conf.d/*.secret       # Ignore files with .secret extension in fish/conf.d" >> "$DOTIGNORE_FILE"
-    echo "# nvim/lazy-lock.json        # Ignore lock files" >> "$DOTIGNORE_FILE"
-    echo "# **/node_modules            # Ignore all node_modules directories" >> "$DOTIGNORE_FILE"
-    echo "# gcloud/**                  # Ignore everything in gcloud" >> "$DOTIGNORE_FILE"
-    echo "" >> "$DOTIGNORE_FILE"
-fi
+create_dotignore() {
+    if [ ! -f "$DOTIGNORE_FILE" ]; then
+        echo -e "${YELLOW}${WARNING_MARK} Creating .dotignore file${NC}"
+        cat > "$DOTIGNORE_FILE" << EOF
+# Add files to ignore when syncing
+# Each line is a glob pattern matched against the basename of files
+*history
+*_history
+*id_rsa*
+*authorized_keys*
+*known_hosts*
+*htop
+*netrc
+*oauth*
+*robrc
+*token*
+*.cert
+*.key
+*.pem
+*.crt
+*credentials*
+*client_secret*
+EOF
+    fi
+}
 
-# Function to check if a path matches any pattern in .dotignore
-is_ignored() {
-    local path="$1"
+parse_sections() {
+    grep '^\[.*\]$' "$DISTRIBUTION_FILE" | sed 's/\[\(.*\)\]/\1/'
+}
+
+parse_files() {
+    local section=$1
+    local in_section=false
+    local in_array=false
     
-    # Ensure the path is relative to CONFIG_DIR
-    if [[ "$path" == "$CONFIG_DIR"/* ]]; then
-        path="${path#$CONFIG_DIR/}"
+    # Check if section exists
+    if ! grep -q "^\[$section\]$" "$DISTRIBUTION_FILE"; then
+        return
     fi
     
-    # Check each pattern in .dotignore
-    while IFS= read -r line || [ -n "$line" ]; do
+    while IFS= read -r line; do
         # Skip empty lines and comments
-        if [ -z "$line" ] || [[ "$line" == \#* ]]; then
+        if [[ -z "$line" || "$line" =~ ^# ]]; then
             continue
         fi
         
-        # Remove trailing comments from the line
-        pattern=$(echo "$line" | sed 's/#.*$//' | xargs)
-        
-        # Check if path matches the pattern
-        if [[ "$path" == $pattern ]] || [[ "$path" == */$pattern ]] || [[ "$path" == $pattern/* ]]; then
-            return 0 # Path is ignored
-        fi
-    done < "$DOTIGNORE_FILE"
-    
-    return 1 # Path is not ignored
-}
-
-# Function to collect all files from the distribution.toml
-get_distribution_files() {
-    local files=()
-    local current_section=""
-    
-    while IFS= read -r line || [ -n "$line" ]; do
-        # Skip empty lines and comments
-        if [ -z "$line" ] || [[ "$line" == \#* ]]; then
-            continue
-        fi
-
-        # Check if this is a section header
-        if [[ $line =~ \[(.*)\] ]]; then
-            current_section="${BASH_REMATCH[1]}"
-            continue
-        fi
-
-        # If line contains a file path (in the array)
-        if [[ $line =~ \"([^\"]+)\" ]]; then
-            file="${BASH_REMATCH[1]}"
-            if [ -n "$current_section" ] && [ -n "$file" ]; then
-                files+=("$current_section/$file")
-            fi
-        fi
-    done < "$DISTRIBUTION_FILE"
-    
-    # Debug: Print all files found in distribution.toml
-    #echo "DEBUG: Files found in distribution.toml:" >&2
-    #for f in "${files[@]}"; do
-    #    echo "  $f" >&2
-    #done
-    
-    printf "%s\n" "${files[@]}"
-}
-
-# Command 1: Sync files from $HOME/.config to $HOME/repos/dotfiles/config
-backup_to_repo() {
-    echo "Syncing files from \$HOME/.config to \$HOME/repos/dotfiles/config..."
-    
-    # Get list of files from distribution.toml
-    echo "Processing files listed in distribution.toml..."
-    get_distribution_files | while read -r file_path; do
-        local section=$(dirname "$file_path")
-        local file=$(basename "$file_path")
-        local source_dir="$CONFIG_DIR/$section"
-        local target_dir="$DOTFILES_CONFIG/$section"
-        local source_path="$source_dir/$file"
-        local target_path="$target_dir/$file"
-        
-        # Check if file is in .dotignore
-        if is_ignored "$source_path"; then
-            echo "  Skipping ignored file: $section/$file"
+        # Check if we've entered our section
+        if [[ "$line" == "[$section]" ]]; then
+            in_section=true
             continue
         fi
         
-        if [ -e "$source_path" ]; then
-            echo "  Syncing $section/$file"
-            mkdir -p "$(dirname "$target_path")"
-            cp -aR "$source_path" "$target_path"
-        else
-            echo "  Warning: $source_path not found"
-        fi
-    done
-    
-    # Note: Sensitive files like api-keys.fish should be excluded via .dotignore
-    
-    echo "Sync completed to $DOTFILES_CONFIG"
-}
-
-# Command 2: Check status of files in distribution.toml
-check_missing_files() {
-    echo "Checking dotfiles status..."
-    
-    # Get all files tracked in distribution.toml
-    mapfile -t tracked_files < <(get_distribution_files)
-    
-    # Store results for summary
-    untracked_tools_count=0
-    untracked_files_count=0
-    missing_repo_count=0
-    missing_config_count=0
-    
-    echo "" 
-    echo "================== SUMMARY =================="
-    
-    # 1. Find all directories in $HOME/.config and check if they're in distribution.toml
-    untracked_tools=0
-    untracked_tools_list=""
-    for dir in "$CONFIG_DIR"/*; do
-        if [ -d "$dir" ]; then
-            dir_name=$(basename "$dir")
-            # Skip hidden directories
-            if [[ "$dir_name" == .* ]]; then
-                continue
-            fi
-            
-            # Skip directories in .dotignore
-            if is_ignored "$dir"; then
-                continue
-            fi
-            
-            # Check if this directory is in our distribution.toml
-            if ! grep -q "\[$dir_name\]" "$DISTRIBUTION_FILE"; then
-                if [ -z "$untracked_tools_list" ]; then
-                    untracked_tools_list="$dir_name"
-                else
-                    untracked_tools_list="$untracked_tools_list, $dir_name"
-                fi
-                untracked_tools=1
-                untracked_tools_count=$((untracked_tools_count + 1))
-            fi
-        fi
-    done
-    
-    # Display summary of untracked tools
-    if [ $untracked_tools -eq 0 ]; then
-        echo "- All tools are tracked in distribution.toml"
-    else
-        echo "- Found $untracked_tools_count untracked tools"
-    fi
-    
-    # 2. For directories that are in distribution.toml, check for untracked files
-    # Group by tool (section)
-    # Use declare with shopt to ensure associative arrays are supported
-    untracked_by_tool=()
-    
-    for section in $(grep '\[.*\]' "$DISTRIBUTION_FILE" | sed 's/\[\(.*\)\]/\1/g'); do
-        if [ -d "$CONFIG_DIR/$section" ]; then
-            # Use find to list all files and process them directly
-            find "$CONFIG_DIR/$section" -type f -not -path "*/\.*" | while read -r file; do
-                # Remove the CONFIG_DIR prefix to get the relative path
-                rel_path=${file#"$CONFIG_DIR/"}
-                file_name=${file#"$CONFIG_DIR/$section/"}
-                
-                # Check if this file is in our tracked files
-                found=0
-                for tracked in "${tracked_files[@]}"; do
-                    if [ "$tracked" = "$rel_path" ]; then
-                        found=1
-                        break
-                    fi
-                done
-                
-                if [ $found -eq 0 ]; then
-                    # Skip files in .dotignore
-                    if is_ignored "$file"; then
-                        continue
-                    fi
-                    
-                    # Store as section:files format in the array
-                    untracked_by_tool+=("$section:\"$file_name\"")
-                    untracked_files_count=$((untracked_files_count + 1))
-                fi
-            done
-        fi
-    done
-    
-    # Display summary of untracked files
-    if [ ${#untracked_by_tool[@]} -eq 0 ]; then
-        echo "- All files are tracked in distribution.toml"
-    else
-        echo "- Found $untracked_files_count untracked files"
-    fi
-    
-    # 3. Check if tracked files exist in the dotfiles repo
-    # Group by tool (section)
-    missing_by_tool_repo=()
-    
-    for file_path in "${tracked_files[@]}"; do
-        section=$(dirname "$file_path")
-        file=$(basename "$file_path")
-        repo_path="$DOTFILES_CONFIG/$section/$file"
-        
-        # Check if the file exists
-        if [ ! -e "$repo_path" ]; then
-            # Store as section:files format in the array
-            missing_by_tool_repo+=("$section:\"$file\"")
-            missing_repo_count=$((missing_repo_count + 1))
-        fi
-    done
-    
-    # Display summary of missing files in repo
-    if [ ${#missing_by_tool_repo[@]} -eq 0 ]; then
-        echo "- All tracked files are present in repo"
-    else
-        echo "- $missing_repo_count files need to be synced (missing in repo)"
-    fi
-    
-    # 4. Check if tracked files exist in $HOME/.config
-    # Group by tool (section)
-    missing_by_tool_config=()
-    
-    for file_path in "${tracked_files[@]}"; do
-        section=$(dirname "$file_path")
-        file=$(basename "$file_path")
-        config_path="$CONFIG_DIR/$section/$file"
-        
-        if [ ! -e "$config_path" ]; then
-            # Store as section:files format in the array
-            missing_by_tool_config+=("$section:\"$file\"")
-            missing_config_count=$((missing_config_count + 1))
-        fi
-    done
-    
-    # Display summary of missing files in $HOME/.config
-    if [ ${#missing_by_tool_config[@]} -eq 0 ]; then
-        echo "- All tracked files are present in \$HOME/.config"
-    else
-        echo "- $missing_config_count files need to be installed (missing in \$HOME/.config)"
-    fi
-    
-    echo "============================================="
-    echo ""
-    
-    # Display detailed reports if there are items to report
-    if [ $untracked_tools -ne 0 ]; then
-        echo "=== Untracked tools (not in distribution.toml) ==="
-        echo "  $untracked_tools_list"
-        echo ""
-    fi
-    
-    if [ ${#untracked_by_tool[@]} -ne 0 ]; then
-        echo "=== Untracked files (not in distribution.toml) ==="
-        # Print all entries organized by section
-        current_section=""
-        for entry in $(printf '%s\n' "${untracked_by_tool[@]}" | sort); do
-            # Split by the first colon to get section and file
-            section="${entry%%:*}"
-            file="${entry#*:}"
-            
-            # If we've moved to a new section, print the section header
-            if [ "$section" != "$current_section" ]; then
-                # Only add a blank line if this isn't the first section
-                if [ -n "$current_section" ]; then
-                    echo ""
-                fi
-                echo "  Tool: $section"
-                current_section="$section"
-            fi
-            
-            echo "    File: $file"
-        done
-        echo ""
-    fi
-    
-    if [ ${#missing_by_tool_repo[@]} -ne 0 ]; then
-        echo "=== Files missing from repo (need to run 'sync') ==="
-        # Print all entries organized by section
-        current_section=""
-        for entry in $(printf '%s\n' "${missing_by_tool_repo[@]}" | sort); do
-            # Split by the first colon to get section and file
-            section="${entry%%:*}"
-            file="${entry#*:}"
-            
-            # If we've moved to a new section, print the section header
-            if [ "$section" != "$current_section" ]; then
-                # Only add a blank line if this isn't the first section
-                if [ -n "$current_section" ]; then
-                    echo ""
-                fi
-                echo "  Tool: $section"
-                current_section="$section"
-            fi
-            
-            echo "    File: $file"
-        done
-        echo ""
-    fi
-    
-    if [ ${#missing_by_tool_config[@]} -ne 0 ]; then
-        echo "=== Files missing from \$HOME/.config (need to run 'install') ==="
-        # Print all entries organized by section
-        current_section=""
-        for entry in $(printf '%s\n' "${missing_by_tool_config[@]}" | sort); do
-            # Split by the first colon to get section and file
-            section="${entry%%:*}"
-            file="${entry#*:}"
-            
-            # If we've moved to a new section, print the section header
-            if [ "$section" != "$current_section" ]; then
-                # Only add a blank line if this isn't the first section
-                if [ -n "$current_section" ]; then
-                    echo ""
-                fi
-                echo "  Tool: $section"
-                current_section="$section"
-            fi
-            
-            echo "    File: $file"
-        done
-        echo ""
-    fi
-    
-    echo "Status check completed"
-}
-
-# Command 3: Install files from $HOME/repos/dotfiles/config to $HOME/.config
-install_from_repo() {
-    echo "Installing config files from \$HOME/repos/dotfiles/config to \$HOME/.config..."
-    
-    get_distribution_files | while read -r file_path; do
-        local section=$(dirname "$file_path")
-        local file=$(basename "$file_path")
-        local source_path="$DOTFILES_CONFIG/$section/$file"
-        local target_dir="$CONFIG_DIR/$section"
-        local target_path="$target_dir/$file"
-        
-        if [ -e "$source_path" ]; then
-            echo "  Installing $section/$file"
-            mkdir -p "$(dirname "$target_path")"
-            cp -aR "$source_path" "$target_path"
-        else
-            echo "  Warning: $source_path not found in repo"
-        fi
-    done
-    
-    echo "Installation completed to $CONFIG_DIR"
-}
-
-# Show usage if no arguments provided
-usage() {
-    echo "Usage: $0 <command> [options]"
-    echo "Commands:"
-    echo "  sync       - Sync files listed in distribution.toml from \$HOME/.config to \$HOME/repos/dotfiles/config"
-    echo "  status     - Show status of files in distribution.toml"
-    echo "  install    - Install files listed in distribution.toml from \$HOME/repos/dotfiles/config to \$HOME/.config"
-    echo "  add <path> - Add a file or directory to distribution.toml"
-    echo "  add-all    - Add all untracked files to distribution.toml"
-    echo "  remove <path> - Remove a file or directory from distribution.toml (doesn't delete actual files)"
-    echo "  wamense [-f|--force] - Clean up repository by removing files not tracked in distribution.toml"
-    echo ""
-    echo "Files matching patterns in \$HOME/repos/dotfiles/.dotignore will be skipped"
-    exit 1
-}
-
-
-# Command 4: Add a file or directory to distribution.toml
-do_track_files() {
-    local section="$1"
-    local files=("${@:2}")  # All arguments after the first one are files
-    
-    echo "Tracking files for section [$section]: ${files[*]}"
-    
-    # Read the entire distribution.toml file
-    mapfile -t toml_lines < "$DISTRIBUTION_FILE"
-    
-    # Find the section's start and end (if it exists)
-    section_start=-1
-    section_end=-1
-    for i in "${!toml_lines[@]}"; do
-        if [[ "${toml_lines[$i]}" =~ ^\[$section\]$ ]]; then
-            section_start=$i
-        elif [[ $section_start -ne -1 && "${toml_lines[$i]}" =~ ^\[.*\]$ ]]; then
-            section_end=$i
+        # Check if we've entered a new section
+        if [[ "$line" =~ ^\[.*\]$ && "$in_section" == true ]]; then
             break
         fi
-    done
-    
-    # If section doesn't exist, add it at the end
-    if [[ $section_start -eq -1 ]]; then
-        echo "Creating new section [$section]"
-        echo "" >> "$DISTRIBUTION_FILE"
-        echo "# $section config files" >> "$DISTRIBUTION_FILE"
-        echo "[$section]" >> "$DISTRIBUTION_FILE"
-        echo "files = [" >> "$DISTRIBUTION_FILE"
-        for file in "${files[@]}"; do
-            echo "    \"$file\"," >> "$DISTRIBUTION_FILE"
-        done
-        echo "]" >> "$DISTRIBUTION_FILE"
-        return 0
-    fi
-    
-    # Create a temporary file for the reconstructed TOML
-    tmpfile=$(mktemp)
-    
-    # Copy lines up to the section
-    for ((i=0; i<section_start; i++)); do
-        echo "${toml_lines[$i]}" >> "$tmpfile"
-    done
-    
-    # Write section header
-    echo "${toml_lines[$section_start]}" >> "$tmpfile"
-    echo "files = [" >> "$tmpfile"
-    
-    # Write all files 
-    for file in "${files[@]}"; do
-        echo "    \"$file\"," >> "$tmpfile"
-    done
-    
-    # Close the files array
-    echo "]" >> "$tmpfile"
-    
-    # Skip to the next section in the original file
-    if [[ $section_end -ne -1 ]]; then
-        for ((i=section_end; i<${#toml_lines[@]}; i++)); do
-            echo "${toml_lines[$i]}" >> "$tmpfile"
-        done
-    fi
-    
-    # Replace the original file
-    mv "$tmpfile" "$DISTRIBUTION_FILE"
-    echo "Section [$section] updated with new files"
-}
-
-track_file() {
-    local path="$1"
-    
-    if [ -z "$path" ]; then
-        echo "Error: No path provided to track"
-        usage
-        exit 1
-    fi
-    
-    # Check if the path exists in $HOME/.config
-    if [[ "$path" == /* ]]; then
-        # Absolute path provided
-        if [[ "$path" != "$CONFIG_DIR"/* ]]; then
-            echo "Error: Path must be within \$HOME/.config"
-            exit 1
-        fi
-        # Convert to relative path from $HOME/.config
-        rel_path="${path#$CONFIG_DIR/}"
-    else
-        # Relative path provided, assume it's relative to $HOME/.config
-        rel_path="$path"
-        path="$CONFIG_DIR/$path"
-    fi
-    
-    if [ ! -e "$path" ]; then
-        echo "Error: Path '$path' does not exist"
-        exit 1
-    fi
-    
-    # Check if path is in .dotignore
-    if is_ignored "$path"; then
-        echo "Warning: Path '$path' is in .dotignore and won't be added"
-        exit 0
-    fi
-    
-    # Extract section (top-level directory) and file path
-    if [[ "$rel_path" == */* ]]; then
-        section=$(echo "$rel_path" | cut -d/ -f1)
         
-        # For subdirectory files, just keep the path relative to $HOME/.config/section
-        if [[ "$path" == "$CONFIG_DIR"/* ]]; then
-            # Remove the CONFIG_DIR/section prefix to get actual file path in section
-            file=${path#$CONFIG_DIR/$section/}
-        else
-            # For other paths, keep full relative path
-            file=${rel_path#*/}
-        fi
-    else
-        # For top-level files or directories
-        section="$rel_path"
-        file=""
-    fi
-    
-    # Check if it's a directory
-    if [ -d "$path" ] && [ -z "$file" ]; then
-        echo "Adding section [$section] to distribution.toml"
-        
-        # Debug info
-        echo "Searching for files in: $path"
-        
-        # List files before attempting to add them
-        files_to_add=()
-        echo "Files found in $path:"
-        while IFS= read -r file_path; do
-            echo "  $file_path"
-            
-            # Skip hidden files if needed
-            if [[ $(basename "$file_path") == .* ]]; then
-                echo "  Processing hidden file: ${file_path#$CONFIG_DIR/}"
-            fi
-            
-            # Skip files in .dotignore
-            if is_ignored "$file_path"; then
-                echo "  Skipping ignored file: ${file_path#$CONFIG_DIR/}"
+        # Process lines in our section
+        if [[ "$in_section" == true ]]; then
+            # Check if we hit the files array - handle all formats
+            if [[ "$line" == "files = [" ]]; then
+                # Standard multi-line array start
+                in_array=true
+                continue
+            # Properly handle all single-line array formats with better spacing patterns
+            elif [[ "$line" =~ ^files[[:space:]]*=[[:space:]]*\[\"([^\"]+)\".*\]$ ]]; then
+                # Single-line array with double quotes, any whitespace: files = ["theme.sh"]
+                filename="${BASH_REMATCH[1]}"
+                echo "$filename"
+                continue
+            elif [[ "$line" =~ ^files[[:space:]]*=[[:space:]]*\[\'([^\']+)\'.*\]$ ]]; then
+                # Single-line array with single quotes, any whitespace: files = ['theme.sh']
+                filename="${BASH_REMATCH[1]}"
+                echo "$filename" 
                 continue
             fi
             
-            # Get relative path from section directory
-            rel_file_path=${file_path#$CONFIG_DIR/$section/}
-            echo "  Will add: $rel_file_path"
-            files_to_add+=("$rel_file_path")
-        done < <(find "$path" -type f | sort)
-        
-        # Get existing files for this section
-        existing_files=()
-        
-        while IFS= read -r line; do
-            if [[ "$line" =~ \"([^\"]+)\" ]]; then
-                existing_files+=("${BASH_REMATCH[1]}")
-            fi
-        done < <(grep -A 100 "^\[$section\]$" "$DISTRIBUTION_FILE" | grep -A 100 "^files = \[" | grep -B 100 "^]" | grep "\"")
-        
-        # Combine existing and new files
-        all_files=("${existing_files[@]}" "${files_to_add[@]}")
-        
-        # Remove duplicate files
-        unique_files=()
-        for f in "${all_files[@]}"; do
-            # Check if the file is already in unique_files
-            already_added=0
-            for uf in "${unique_files[@]}"; do
-                if [[ "$f" == "$uf" ]]; then
-                    already_added=1
-                    break
-                fi
-            done
-            
-            # Add only unique files
-            if [[ $already_added -eq 0 ]]; then
-                unique_files+=("$f")
-            fi
-        done
-        
-        # Use the helper function to update the section
-        do_track_files "$section" "${unique_files[@]}"
-    else
-        # It's a file
-        echo "Adding file $file to section [$section]"
-        
-        # Get existing files for this section
-        existing_files=()
-        
-        while IFS= read -r line; do
-            if [[ "$line" =~ \"([^\"]+)\" ]]; then
-                existing_files+=("${BASH_REMATCH[1]}")
-            fi
-        done < <(grep -A 100 "^\[$section\]$" "$DISTRIBUTION_FILE" | grep -A 100 "^files = \[" | grep -B 100 "^]" | grep "\"")
-        
-        # Check if file is already tracked
-        already_tracked=0
-        for existing in "${existing_files[@]}"; do
-            if [[ "$existing" == "$file" ]]; then
-                already_tracked=1
-                break
-            fi
-        done
-        
-        if [[ $already_tracked -eq 1 ]]; then
-            echo "File $file is already tracked in section [$section]"
-        else
-            # Add the file to existing files
-            all_files=("${existing_files[@]}" "$file")
-            
-            # Update the section
-            do_track_files "$section" "${all_files[@]}"
-            echo "File $file added to section [$section]"
-        fi
-    fi
-}
-
-# Command 5: Add all untracked files from $HOME/.config to distribution.toml
-add_all_untracked() {
-    echo "Adding all untracked files to distribution.toml..."
-    
-    # Get all files tracked in distribution.toml
-    mapfile -t tracked_files < <(get_distribution_files)
-    
-    # First add all untracked directories
-    for dir in "$CONFIG_DIR"/*; do
-        if [ -d "$dir" ]; then
-            dir_name=$(basename "$dir")
-            # Skip hidden directories
-            if [[ "$dir_name" == .* ]]; then
-                continue
-            fi
-            
-            # Skip directories in .dotignore
-            if is_ignored "$dir"; then
-                echo "Skipping ignored directory: $dir_name"
-                continue
-            fi
-            
-            # Check if this directory is not in our distribution.toml
-            if ! grep -q "\[$dir_name\]" "$DISTRIBUTION_FILE"; then
-                echo "Tracking directory: $dir_name"
-                track_file "$dir"
-            fi
-        fi
-    done
-    
-    # Then find all untracked files in tracked directories
-    for section in $(grep '\[.*\]' "$DISTRIBUTION_FILE" | sed 's/\[\(.*\)\]/\1/g'); do
-        if [ -d "$CONFIG_DIR/$section" ]; then
-            echo "Checking for untracked files in section: $section"
-            
-            # Get latest list of tracked files (may have changed)
-            mapfile -t tracked_files < <(get_distribution_files)
-            
-            # Use find to list all files and process them directly
-            find "$CONFIG_DIR/$section" -type f -not -path "*/\.*" | while read -r file; do
-                # Remove the CONFIG_DIR prefix to get the relative path
-                rel_path=${file#"$CONFIG_DIR/"}
-                
-                # Skip files in .dotignore
-                if is_ignored "$file"; then
-                    echo "Skipping ignored file: $rel_path"
+            # If in array, extract the filenames
+            if [[ "$in_array" == true ]]; then
+                # Check if array ends
+                if [[ "$line" == "]" ]]; then
+                    in_array=false
                     continue
                 fi
                 
-                # Check if this file is in our tracked files
-                found=0
-                for tracked in "${tracked_files[@]}"; do
-                    if [ "$tracked" = "$rel_path" ]; then
-                        found=1
-                        break
-                    fi
-                done
-                
-                if [ $found -eq 0 ]; then
-                    echo "Adding untracked file: $rel_path"
-                    track_file "$file"
+                # Extract filename from quoted entry
+                filename=$(echo "$line" | sed -E 's/^[ ]*"(.+)",?$/\1/')
+                if [ -n "$filename" ]; then
+                    echo "$filename"
                 fi
-            done
+            fi
         fi
-    done
-    
-    echo "All untracked files have been added to distribution.toml"
+    done < "$DISTRIBUTION_FILE"
 }
 
-# Command 6: Remove a file or directory from distribution.toml (does not delete actual files)
-remove_file() {
-    local path="$1"
+process_files() {
+    local section=$1
+    local action=$2
+    local source_dir="$REPO_DIR/config/$section"
+    local dest_dir="$CONFIG_DIR/$section"
     
-    if [ -z "$path" ]; then
-        echo "Error: No path provided to remove"
+    echo -e "${BLUE}${INFO_MARK} Processing section: ${BOLD}$section${NC}"
+    
+    if [ ! -d "$dest_dir" ]; then
+        echo -e "${YELLOW}${WARNING_MARK} Creating directory: $dest_dir${NC}"
+        mkdir -p "$dest_dir"
+    fi
+    
+    parse_files "$section" | while IFS= read -r file; do
+        if [[ -z "$file" || "$file" =~ ^# ]]; then
+            continue
+        fi
+        
+        # For sync: local → repo, so source is local, dest is repo
+        # For install: repo → local, so source is repo, dest is local
+        local repo_file="$source_dir/$file"
+        local local_file="$dest_dir/$file"
+        
+        case "$action" in
+            "install")
+                install_file "$repo_file" "$local_file" "$section/$file"
+                ;;
+            "sync")
+                sync_file "$local_file" "$repo_file" "$section/$file"
+                ;;
+            "status")
+                check_status "$repo_file" "$local_file" "$section/$file"
+                ;;
+        esac
+    done
+}
+
+install_file() {
+    local source=$1
+    local dest=$2
+    local display_path=$3
+    
+    if [ -f "$source" ]; then
+        mkdir -p "$(dirname "$dest")"
+        cp -f "$source" "$dest"
+        echo -e "${GREEN}${CHECK_MARK} Installed to local: ${NC}$display_path"
+    else
+        echo -e "${YELLOW}${WARNING_MARK} Repo file not found: ${NC}$display_path"
+    fi
+}
+
+sync_file() {
+    local source=$1
+    local dest=$2
+    local display_path=$3
+    
+    if [ -f "$source" ]; then
+        mkdir -p "$(dirname "$dest")"
+        cp -f "$source" "$dest"
+        echo -e "${GREEN}${CHECK_MARK} Synced to repo: ${NC}$display_path"
+    else
+        echo -e "${YELLOW}${WARNING_MARK} Local file not found: ${NC}$display_path"
+    fi
+}
+
+check_status() {
+    local source=$1
+    local dest=$2
+    local display_path=$3
+    
+    if [ ! -f "$source" ]; then
+        echo -e "${RED}${CROSS_MARK} Missing in repo: ${NC}$display_path"
+        return
+    fi
+    
+    if [ ! -e "$dest" ]; then
+        echo -e "${YELLOW}${WARNING_MARK} Not installed: ${NC}$display_path"
+        return
+    fi
+    
+    if diff -q "$source" "$dest" >/dev/null 2>&1; then
+        echo -e "${GREEN}${CHECK_MARK} Identical: ${NC}$display_path"
+    else
+        echo -e "${PURPLE}${ARROW_MARK} Modified locally: ${NC}$display_path"
+    fi
+}
+
+add_file() {
+    local section=$1
+    local file=$2
+    
+    local source_dir="$REPO_DIR/config/$section"
+    local dest_dir="$CONFIG_DIR/$section"
+    local source_file="$source_dir/$file"
+    local dest_file="$dest_dir/$file"
+    
+    if [ ! -f "$dest_file" ]; then
+        echo -e "${RED}${CROSS_MARK} File not found: $dest_file${NC}"
+        exit 1
+    fi
+    
+    if [ ! -d "$source_dir" ]; then
+        mkdir -p "$source_dir"
+    fi
+    
+    if ! grep -q "^\[$section\]$" "$DISTRIBUTION_FILE"; then
+        echo -e "\n[$section]" >> "$DISTRIBUTION_FILE"
+    fi
+    
+    # Add file to distribution file if not already present
+    if ! grep -A 100 "^\[$section\]$" "$DISTRIBUTION_FILE" | grep -m 1 -B 100 "^\[.*\]$" | grep -q "^$file$"; then
+        # Find the position to insert the new file
+        local section_line=$(grep -n "^\[$section\]$" "$DISTRIBUTION_FILE" | cut -d: -f1)
+        local next_section_line=$(tail -n +$((section_line+1)) "$DISTRIBUTION_FILE" | grep -n "^\[.*\]$" | head -1 | cut -d: -f1)
+        
+        if [ -z "$next_section_line" ]; then
+            # This is the last section, append to the end
+            echo "$file" >> "$DISTRIBUTION_FILE"
+        else
+            # Insert before the next section
+            sed -i "" "$((section_line+next_section_line-1))i\\
+$file" "$DISTRIBUTION_FILE"
+        fi
+    fi
+    
+    # Copy file to repo
+    mkdir -p "$(dirname "$source_file")"
+    cp -f "$dest_file" "$source_file"
+    
+    echo -e "${GREEN}${CHECK_MARK} Added to tracking: ${NC}$section/$file"
+}
+
+remove_file() {
+    local section=$1
+    local file=$2
+    
+    local source_file="$REPO_DIR/config/$section/$file"
+    local dest_file="$CONFIG_DIR/$section/$file"
+    
+    if grep -q "^\[$section\]$" "$DISTRIBUTION_FILE"; then
+        sed -i "" "/^\[$section\]$/,/^\[.*\]$/ { /^$file$/d; }" "$DISTRIBUTION_FILE"
+        echo -e "${BLUE}${INFO_MARK} Removed from distribution file: ${NC}$section/$file"
+    fi
+    
+    # Instruct user to remove the file manually
+    if [ -f "$source_file" ]; then
+        echo -e "${YELLOW}${WARNING_MARK} To complete removal, manually delete the file: ${NC}$source_file"
+        echo -e "   ${CYAN}rm $source_file${NC}"
+    fi
+}
+
+# Removed cleanup function
+
+# Run debug checks on distribution file
+debug_distribution() {
+    echo -e "${BLUE}${INFO_MARK} Running diagnostic checks...${NC}"
+    
+    # Check if distribution file exists
+    echo -e "${CYAN}Checking distribution file:${NC} $DISTRIBUTION_FILE"
+    if [ -f "$DISTRIBUTION_FILE" ]; then
+        echo -e "${GREEN}${CHECK_MARK} Distribution file exists${NC}"
+        echo -e "${CYAN}File size:${NC} $(wc -c < "$DISTRIBUTION_FILE") bytes"
+        echo -e "${CYAN}Line count:${NC} $(wc -l < "$DISTRIBUTION_FILE") lines"
+    else
+        echo -e "${RED}${CROSS_MARK} Distribution file not found${NC}"
+        exit 1
+    fi
+    
+    # List all sections
+    echo -e "\n${CYAN}Detected sections:${NC}"
+    local sections=$(parse_sections)
+    local count=0
+    while IFS= read -r section; do
+        if [ -n "$section" ]; then
+            echo -e "${GREEN}${CHECK_MARK} Section:${NC} $section"
+            count=$((count+1))
+        fi
+    done <<< "$sections"
+    echo -e "${CYAN}Total sections:${NC} $count"
+    
+    # Test parsing first section
+    echo -e "\n${CYAN}Testing section parsing:${NC}"
+    local first_section=$(parse_sections | head -1)
+    if [ -n "$first_section" ]; then
+        echo -e "${GREEN}${CHECK_MARK} First section:${NC} $first_section"
+        echo -e "${CYAN}Files in section:${NC}"
+        
+        local section_files=$(parse_files "$first_section")
+        local file_count=0
+        while IFS= read -r file; do
+            if [ -n "$file" ]; then
+                echo -e "  - $file"
+                file_count=$((file_count+1))
+                
+                # Test one file
+                if [ $file_count -eq 1 ]; then
+                    local test_file="$file"
+                    local source_file="$REPO_DIR/config/$first_section/$test_file"
+                    local dest_file="$CONFIG_DIR/$first_section/$test_file"
+                    
+                    echo -e "\n${CYAN}Testing file installation:${NC}"
+                    echo -e "${CYAN}Source:${NC} $source_file"
+                    echo -e "${CYAN}Destination:${NC} $dest_file"
+                    
+                    if [ -f "$source_file" ]; then
+                        echo -e "${GREEN}${CHECK_MARK} Source file exists${NC}"
+                    else
+                        echo -e "${RED}${CROSS_MARK} Source file not found${NC}"
+                    fi
+                    
+                    if [ -e "$dest_file" ]; then
+                        if diff -q "$source_file" "$dest_file" >/dev/null 2>&1; then
+                            echo -e "${GREEN}${CHECK_MARK} Destination file exists and is identical to source${NC}"
+                        else
+                            echo -e "${YELLOW}${WARNING_MARK} Destination file exists but differs from source${NC}"
+                        fi
+                    else
+                        echo -e "${YELLOW}${WARNING_MARK} Destination file does not exist${NC}"
+                    fi
+                fi
+            fi
+        done <<< "$section_files"
+        echo -e "${CYAN}Total files in section:${NC} $file_count"
+    else
+        echo -e "${RED}${CROSS_MARK} No sections found${NC}"
+    fi
+    
+    echo -e "\n${GREEN}${CHECK_MARK} Diagnostic checks complete${NC}"
+}
+
+# Main function
+main() {
+    if [ $# -eq 0 ]; then
+        usage
+    fi
+    
+    check_paths
+    create_dotignore
+    
+    # Check if first argument starts with '+'
+    if [[ "$1" != +* ]]; then
+        echo -e "${RED}${CROSS_MARK} Commands must start with '+', e.g., +sync, +install${NC}"
         usage
         exit 1
     fi
     
-    # Check if the path format is valid
-    if [[ "$path" == /* ]]; then
-        # Absolute path provided
-        if [[ "$path" == "$CONFIG_DIR"/* ]]; then
-            # Path is in $HOME/.config
-            rel_path="${path#$CONFIG_DIR/}"
-            section=$(dirname "$rel_path")
-            if [ "$section" = "." ]; then
-                section=$(basename "$rel_path")
-                file=""
-            else
-                file=$(basename "$rel_path")
-            fi
-        elif [[ "$path" == "$DOTFILES_CONFIG"/* ]]; then
-            # Path is in $HOME/repos/dotfiles/config
-            rel_path="${path#$DOTFILES_CONFIG/}"
-            section=$(dirname "$rel_path")
-            if [ "$section" = "." ]; then
-                section=$(basename "$rel_path")
-                file=""
-            else
-                file=$(basename "$rel_path")
-            fi
-        else
-            echo "Error: Path must be within \$HOME/.config or \$HOME/repos/dotfiles/config"
-            exit 1
-        fi
-    else
-        # Relative path provided
-        rel_path="$path"
-        section=$(dirname "$rel_path")
-        if [ "$section" = "." ]; then
-            section=$(basename "$rel_path")
-            file=""
-        else
-            file=$(basename "$rel_path")
-        fi
-    fi
+    # Remove the leading '+'
+    cmd="${1#+}"
     
-    # Check if it's a directory removal (entire section)
-    if [ -z "$file" ] || [ "$file" = "$section" ]; then
-        echo "Removing entire section [$section] from distribution.toml"
-        
-        # Check if section exists
-        if grep -q "^\[$section\]$" "$DISTRIBUTION_FILE"; then
-            # Find start and end of section
-            section_start=$(grep -n "^\[$section\]$" "$DISTRIBUTION_FILE" | cut -d: -f1)
-            next_section=$(tail -n +$((section_start+1)) "$DISTRIBUTION_FILE" | grep -n "^\[.*\]$" | head -1 | cut -d: -f1)
-            
-            if [ -z "$next_section" ]; then
-                # This is the last section, remove to end of file
-                sed -i '' "${section_start},\$d" "$DISTRIBUTION_FILE"
-            else
-                # Remove this section up to the next section
-                section_end=$((section_start + next_section - 1))
-                sed -i '' "${section_start},${section_end}d" "$DISTRIBUTION_FILE"
-            fi
-            
-            echo "Section [$section] removed from distribution.toml"
-        else
-            echo "Section [$section] not found in distribution.toml"
-        fi
-    else
-        # It's a file removal
-        echo "Removing file $file from section [$section]"
-        
-        # Check if section exists
-        if grep -q "^\[$section\]$" "$DISTRIBUTION_FILE"; then
-            # Check if file is tracked
-            if grep -q "\"$file\"" "$DISTRIBUTION_FILE"; then
-                # Remove the file line
-                sed -i '' "/\"$file\"/d" "$DISTRIBUTION_FILE"
-                echo "File $file removed from section [$section]"
-                
-                # Check if there are any files left in the section
-                files_line=$(grep -n "^files = \[$" "$DISTRIBUTION_FILE" | grep -A1 "^\[$section\]$" | tail -1 | cut -d: -f1)
-                close_array=$(tail -n +$files_line "$DISTRIBUTION_FILE" | grep -n "^]$" | head -1 | cut -d: -f1)
-                close_line=$((files_line + close_array - 1))
-                
-                # If there are no files between "files = [" and "]", remove the section
-                if [ $((close_line - files_line)) -eq 1 ]; then
-                    echo "No files left in section [$section], removing section"
-                    remove_file "$section"
-                fi
-            else
-                echo "File $file not found in section [$section]"
-            fi
-        else
-            echo "Section [$section] not found in distribution.toml"
-        fi
-    fi
-}
-
-# Wamense - Clean up untracked files in repo
-wamense() {
-    local force=0
-    if [ "$1" = "-f" ] || [ "$1" = "--force" ]; then
-        force=1
-    fi
-    
-    echo "Cleaning up untracked files from repository..."
-    
-    # Get all tracked files
-    mapfile -t tracked_files < <(get_distribution_files)
-    
-    # Convert tracked_files to full paths in the repo
-    tracked_repo_files=()
-    for file in "${tracked_files[@]}"; do
-        tracked_repo_files+=("$DOTFILES_CONFIG/$file")
-    done
-    
-    # Find all files in the dotfiles/config directory
-    echo "Scanning repository for files..."
-    all_repo_files=()
-    while IFS= read -r -d '' file; do
-        # Skip directories
-        if [ -f "$file" ]; then
-            all_repo_files+=("$file")
-        fi
-    done < <(find "$DOTFILES_CONFIG" -type f -print0)
-    
-    # Compare and remove files not in distribution.toml
-    removed_count=0
-    
-    # In non-force mode, show files that will be removed
-    if [ $force -eq 0 ]; then
-        echo ""
-        echo "The following files will be removed from the repository:"
-        echo ""
-        for repo_file in "${all_repo_files[@]}"; do
-            # Check if file is tracked
-            is_tracked=0
-            for tracked_file in "${tracked_repo_files[@]}"; do
-                if [ "$repo_file" = "$tracked_file" ]; then
-                    is_tracked=1
-                    break
-                fi
+    case "$cmd" in
+        "sync")
+            echo -e "${BOLD}Syncing dotfiles...${NC}"
+            for section in $(parse_sections); do
+                process_files "$section" "sync"
             done
-            
-            # If not tracked, mark for removal
-            if [ $is_tracked -eq 0 ]; then
-                # Get relative path for display
-                rel_path=${repo_file#$DOTFILES_CONFIG/}
-                echo "  $rel_path"
-                removed_count=$((removed_count + 1))
+            ;;
+        "status")
+            echo -e "${BOLD}Checking dotfiles status...${NC}"
+            for section in $(parse_sections); do
+                process_files "$section" "status"
+            done
+            ;;
+        "install")
+            echo -e "${BOLD}Installing dotfiles...${NC}"
+            for section in $(parse_sections); do
+                process_files "$section" "install"
+            done
+            ;;
+        "add")
+            if [ $# -lt 3 ]; then
+                echo -e "${RED}${CROSS_MARK} Usage: $(basename $0) +add <path>${NC}"
+                exit 1
             fi
-        done
-        
-        if [ $removed_count -eq 0 ]; then
-            echo "No untracked files found in repository."
-            return
-        fi
-        
-        echo ""
-        echo "Total files to remove: $removed_count"
-        echo ""
-        
-        # Ask for confirmation
-        read -p "Are you sure you want to remove these files? [y/N] " -n 1 -r
-        echo ""
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            echo "Operation cancelled."
-            return
-        fi
-    fi
-    
-    # Remove untracked files
-    removed_count=0
-    for repo_file in "${all_repo_files[@]}"; do
-        is_tracked=0
-        for tracked_file in "${tracked_repo_files[@]}"; do
-            if [ "$repo_file" = "$tracked_file" ]; then
-                is_tracked=1
-                break
+            add_file "$2" "$3"
+            ;;
+        "remove")
+            if [ $# -lt 3 ]; then
+                echo -e "${RED}${CROSS_MARK} Usage: $(basename $0) +remove <path>${NC}"
+                exit 1
             fi
-        done
-        
-        if [ $is_tracked -eq 0 ]; then
-            rel_path=${repo_file#$DOTFILES_CONFIG/}
-            rm -f "$repo_file"
-            if [ $force -eq 0 ]; then
-                echo "Removed: $rel_path"
-            fi
-            removed_count=$((removed_count + 1))
-        fi
-    done
-    
-    # Clean up empty directories
-    if [ $force -eq 0 ]; then
-        echo "Cleaning up empty directories..."
-    fi
-    find "$DOTFILES_CONFIG" -type d -empty -delete
-    
-    if [ $force -eq 1 ]; then
-        echo "Removed $removed_count untracked files from repository."
-    else
-        echo "Clean up completed."
-    fi
+            remove_file "$2" "$3"
+            ;;
+        "debug")
+            debug_distribution
+            ;;
+        "help")
+            usage
+            ;;
+        *)
+            echo -e "${RED}${CROSS_MARK} Unknown command: $1${NC}"
+            usage
+            ;;
+    esac
 }
 
-
-# Main script
-case "$1" in
-    sync|save|backup)
-        backup_to_repo
-        ;;
-    status|check)
-        check_missing_files
-        ;;
-    install|apply)
-        install_from_repo
-        ;;
-    add|track)
-        track_file "$2"
-        ;;
-    add-all)
-        add_all_untracked
-        ;;
-    remove|rm)
-        remove_file "$2"
-        ;;
-    wamense)
-        wamense "$2"
-        ;;
-    *)
-        usage
-        ;;
-esac
+# Run main function
+main "$@"
