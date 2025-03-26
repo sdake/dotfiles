@@ -963,7 +963,7 @@ files = ["aliases.sh"]
 
 # terminfo config files
 [terminfo]
-files = ["x/xterm-ghostty"]
+files = ["x/xterm-ghostty.terminfo"]
 
 # vivid config files
 [vivid]
