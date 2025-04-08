@@ -29,3 +29,4 @@ set --universal --export CARGO_REGISTRY_TOKEN ""
 set --universal --export HOMEBREW_NO_ANALYTICS 1
 set --universal --export ELECTRON_NO_ATTACH_CONSOLE 1
 set --universal --export HF_HUB_DISABLE_TELEMETRY 1
+set --universal --export TRACELOOP_TELEMETRY FALSE
