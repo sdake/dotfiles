@@ -15,7 +15,7 @@
 [delta]
     navigate = true
     light = true
-    side-by-side = true
+    side-by-side = false
     features = coracias-caudatus
 
 [merge]
